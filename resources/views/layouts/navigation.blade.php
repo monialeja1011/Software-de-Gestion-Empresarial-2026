@@ -1,4 +1,3 @@
-```php
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
 
     <!-- Primary Navigation Menu -->
@@ -19,6 +18,16 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">Ventas</x-nav-link>
+                    <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">Clientes</x-nav-link>
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">Productos</x-nav-link>
+                    @if (Auth::user()->isAdmin())
+                        <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">Compras</x-nav-link>
+                        <x-nav-link :href="route('providers.index')" :active="request()->routeIs('providers.*')">Proveedores</x-nav-link>
+                        <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">Categorías</x-nav-link>
+                        <x-nav-link :href="route('payment-methods.index')" :active="request()->routeIs('payment-methods.*')">Pagos</x-nav-link>
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">Usuarios</x-nav-link>
+                    @endif
                 </div>
 
             </div>
@@ -49,6 +58,8 @@
                     </x-slot>
 
                     <x-slot name="content">
+
+                        <x-dropdown-link :href="route('profile.edit')">Perfil ({{ Auth::user()->role }})</x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -108,10 +119,17 @@
 
         <div class="pt-2 pb-3 space-y-1">
 
-            <x-responsive-nav-link :href="route('dashboard')"
-                                   :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">Ventas</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">Clientes</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">Productos</x-responsive-nav-link>
+            @if (Auth::user()->isAdmin())
+                <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">Compras</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('providers.index')" :active="request()->routeIs('providers.*')">Proveedores</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">Categorías</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('payment-methods.index')" :active="request()->routeIs('payment-methods.*')">Pagos</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">Usuarios</x-responsive-nav-link>
+            @endif
 
         </div>
 
@@ -131,6 +149,7 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('profile.edit')">Perfil</x-responsive-nav-link>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
@@ -151,4 +170,3 @@
     </div>
 
 </nav>
-```

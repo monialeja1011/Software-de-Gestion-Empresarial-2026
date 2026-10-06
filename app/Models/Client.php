@@ -14,6 +14,8 @@ class Client extends Model
         'active'
     ];
 
+    protected $casts = ['active' => 'boolean'];
+
     // Relación: un cliente tiene muchas ventas
     public function sales()
     {

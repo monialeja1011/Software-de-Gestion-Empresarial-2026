@@ -14,6 +14,8 @@ class Provider extends Model
         'active'
     ];
 
+    protected $casts = ['active' => 'boolean'];
+
     // Relación: un proveedor tiene muchas compras
     public function purchases()
     {

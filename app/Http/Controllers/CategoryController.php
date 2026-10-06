@@ -7,9 +7,18 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    private function rules(): array
+    {
+        return [
+            'name'        => ['required', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'active'      => ['nullable', 'boolean'],
+        ];
+    }
+
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::withCount('products')->orderBy('name')->get();
         return view('categories.index', compact('categories'));
     }
 
@@ -20,8 +29,11 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        Category::create($request->all());
-        return redirect()->route('categories.index');
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        Category::create($data);
+
+        return redirect()->route('categories.index')->with('success', 'Categoría creada.');
     }
 
     public function edit(Category $category)
@@ -31,13 +43,21 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $category->update($request->all());
-        return redirect()->route('categories.index');
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        $category->update($data);
+
+        return redirect()->route('categories.index')->with('success', 'Categoría actualizada.');
     }
 
     public function destroy(Category $category)
     {
+        if ($category->products()->exists()) {
+            return back()->withErrors('No se puede eliminar: la categoría tiene productos. Puedes desactivarla.');
+        }
+
         $category->delete();
-        return redirect()->route('categories.index');
+
+        return redirect()->route('categories.index')->with('success', 'Categoría eliminada.');
     }
 }

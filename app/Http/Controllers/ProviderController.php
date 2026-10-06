@@ -2,63 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Provider;
 use Illuminate\Http\Request;
 
 class ProviderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private function rules(): array
+    {
+        return [
+            'name'    => ['required', 'string', 'max:150'],
+            'email'   => ['nullable', 'email', 'max:255'],
+            'phone'   => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'active'  => ['nullable', 'boolean'],
+        ];
+    }
+
     public function index()
     {
-        //
+        $providers = Provider::orderBy('name')->paginate(15);
+        return view('providers.index', compact('providers'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('providers.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        Provider::create($data);
+
+        return redirect()->route('providers.index')->with('success', 'Proveedor creado.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Provider $provider)
     {
-        //
+        return view('providers.edit', compact('provider'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, Provider $provider)
     {
-        //
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        $provider->update($data);
+
+        return redirect()->route('providers.index')->with('success', 'Proveedor actualizado.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Provider $provider)
     {
-        //
-    }
+        if ($provider->purchases()->exists()) {
+            return back()->withErrors('No se puede eliminar: tiene compras registradas. Puedes desactivarlo.');
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $provider->delete();
+
+        return redirect()->route('providers.index')->with('success', 'Proveedor eliminado.');
     }
 }

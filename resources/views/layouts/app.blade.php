@@ -27,6 +27,22 @@
                 </header>
             @endisset
 
+            <!-- Mensajes -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
+                @if (session('success'))
+                    <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded">{{ session('success') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded">
+                        <ul class="list-disc ms-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+
             <!-- Page Content -->
             <main>
                 {{ $slot }}

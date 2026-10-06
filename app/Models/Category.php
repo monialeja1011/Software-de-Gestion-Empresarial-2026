@@ -12,6 +12,8 @@ class Category extends Model
         'active'
     ];
 
+    protected $casts = ['active' => 'boolean'];
+
     // Relación: una categoría tiene muchos productos
     public function products()
     {

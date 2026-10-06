@@ -2,63 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private function rules(): array
+    {
+        return [
+            'name'        => ['required', 'string', 'max:150'],
+            'description' => ['nullable', 'string'],
+            'price'       => ['required', 'numeric', 'min:0'],
+            'stock'       => ['required', 'integer', 'min:0'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'active'      => ['nullable', 'boolean'],
+        ];
+    }
+
     public function index()
     {
-        //
+        $products = Product::with('category')->orderBy('name')->paginate(15);
+        return view('products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $categories = Category::where('active', true)->orderBy('name')->get();
+        return view('products.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        Product::create($data);
+
+        return redirect()->route('products.index')->with('success', 'Producto creado.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Product $product)
     {
-        //
+        $categories = Category::where('active', true)->orWhere('id', $product->category_id)->orderBy('name')->get();
+        return view('products.edit', compact('product', 'categories'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $data = $request->validate($this->rules());
+        $data['active'] = $request->boolean('active');
+        $product->update($data);
+
+        return redirect()->route('products.index')->with('success', 'Producto actualizado.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Product $product)
     {
-        //
-    }
+        if ($product->saleDetails()->exists() || $product->purchaseDetails()->exists()) {
+            return back()->withErrors('No se puede eliminar: el producto tiene ventas o compras registradas. Puedes desactivarlo.');
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $product->delete();
+
+        return redirect()->route('products.index')->with('success', 'Producto eliminado.');
     }
 }
