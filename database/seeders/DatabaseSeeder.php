@@ -14,26 +14,63 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Usuarios por defecto (cambia las contraseñas en producción)
-        User::updateOrCreate(['email' => 'admin@sge.test'], [
-            'name' => 'Administrador', 'password' => 'password', 'role' => 'admin',
-        ]);
-        User::updateOrCreate(['email' => 'vendedor@sge.test'], [
-            'name' => 'Vendedor', 'password' => 'password', 'role' => 'vendedor',
-        ]);
+        // Primero crea los roles y permisos de Spatie.
+        $this->call(RolePermissionSeeder::class);
 
-        foreach (['Efectivo', 'Tarjeta débito/crédito', 'Transferencia', 'Nequi / Daviplata'] as $name) {
-            PaymentMethod::firstOrCreate(['name' => $name], ['active' => true]);
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@sge.test'],
+            ['name' => 'Administrador', 'password' => '123456789']
+        );
+        $admin->syncRoles(['admin']);
+
+        $vendedor = User::updateOrCreate(
+            ['email' => 'vendedor@sge.test'],
+            ['name' => 'Vendedor', 'password' => '123456789']
+        );
+        $vendedor->syncRoles(['vendedor']);
+
+        $superadmin = User::updateOrCreate(
+            ['email' => 'superadmin@sge.test'],
+            ['name' => 'Superadministrador', 'password' => '123456789']
+        );
+        $superadmin->syncRoles(['superadmin']);
+
+        foreach ([
+            'Efectivo',
+            'Tarjeta débito/crédito',
+            'Transferencia',
+            'Nequi / Daviplata',
+        ] as $name) {
+            PaymentMethod::firstOrCreate(
+                ['name' => $name],
+                ['active' => true]
+            );
         }
 
-        $cat = Category::firstOrCreate(['name' => 'General'], ['description' => 'Categoría inicial', 'active' => true]);
+        $category = Category::firstOrCreate(
+            ['name' => 'General'],
+            ['description' => 'Categoría inicial', 'active' => true]
+        );
 
-        Product::firstOrCreate(['name' => 'Producto de ejemplo'], [
-            'description' => 'Producto demo', 'price' => 10000, 'stock' => 20,
-            'category_id' => $cat->id, 'active' => true,
-        ]);
+        Product::firstOrCreate(
+            ['name' => 'Producto de ejemplo'],
+            [
+                'description' => 'Producto demo',
+                'price' => 10000,
+                'stock' => 20,
+                'category_id' => $category->id,
+                'active' => true,
+            ]
+        );
 
-        Client::firstOrCreate(['name' => 'Cliente mostrador'], ['active' => true]);
-        Provider::firstOrCreate(['name' => 'Proveedor de ejemplo'], ['active' => true]);
+        Client::firstOrCreate(
+            ['name' => 'Cliente mostrador'],
+            ['active' => true]
+        );
+
+        Provider::firstOrCreate(
+            ['name' => 'Proveedor de ejemplo'],
+            ['active' => true]
+        );
     }
 }

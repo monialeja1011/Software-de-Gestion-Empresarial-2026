@@ -2,38 +2,81 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    private function rules(): array
-    {
-        return [
-            'name'        => ['required', 'string', 'max:100'],
-            'description' => ['nullable', 'string'],
-            'active'      => ['nullable', 'boolean'],
-        ];
+   public function index(Request $request)
+{
+    $filters = $request->validate([
+        'buscar' => ['nullable', 'string', 'max:100'],
+        'estado' => ['nullable', 'in:activa,inactiva'],
+        'trashed' => ['nullable', 'boolean'],
+    ]);
+
+    $showTrashed = $request->boolean('trashed');
+    $search = trim($filters['buscar'] ?? '');
+    $estado = $filters['estado'] ?? '';
+
+    if ($showTrashed) {
+        abort_unless($request->user()->can('restaurar-categorias'), 403);
     }
 
-    public function index()
-    {
-        $categories = Category::withCount('products')->orderBy('name')->get();
-        return view('categories.index', compact('categories'));
+    // Buscar o filtrar requiere el permiso buscar-categorias.
+    if ($search !== '' || $estado !== '') {
+        abort_unless($request->user()->can('buscar-categorias'), 403);
     }
+
+    $query = Category::withCount([
+        'products' => fn ($products) => $products->withTrashed(),
+    ])->orderBy('name');
+
+    if ($showTrashed) {
+        $query->onlyTrashed();
+    }
+
+    if ($search !== '') {
+        $query->where(function ($categories) use ($search) {
+            $categories->where('name', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    if ($estado === 'activa') {
+        $query->where('active', true);
+    } elseif ($estado === 'inactiva') {
+        $query->where('active', false);
+    }
+
+    $categories = $query->paginate(15)->withQueryString();
+    $trashedCount = Category::onlyTrashed()->count();
+
+    return view('categories.index', compact(
+        'categories',
+        'showTrashed',
+        'trashedCount',
+        'search',
+        'estado'
+    ));
+}
 
     public function create()
     {
         return view('categories.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $data = $request->validate($this->rules());
+        $data = $request->validated();
         $data['active'] = $request->boolean('active');
+
         Category::create($data);
 
-        return redirect()->route('categories.index')->with('success', 'Categoría creada.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Categoría creada.');
     }
 
     public function edit(Category $category)
@@ -41,23 +84,37 @@ class CategoryController extends Controller
         return view('categories.edit', compact('category'));
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $data = $request->validate($this->rules());
+        $data = $request->validated();
         $data['active'] = $request->boolean('active');
+
         $category->update($data);
 
-        return redirect()->route('categories.index')->with('success', 'Categoría actualizada.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Categoría actualizada.');
     }
 
     public function destroy(Category $category)
     {
-        if ($category->products()->exists()) {
-            return back()->withErrors('No se puede eliminar: la categoría tiene productos. Puedes desactivarla.');
+        if ($category->products()->withTrashed()->exists()) {
+            return back()->withErrors(
+                'No se puede eliminar: la categoría tiene productos asociados.'
+            );
         }
 
         $category->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Categoría eliminada.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Categoría enviada a la papelera.');
+    }
+
+    public function restore(string $category)
+    {
+        $trashedCategory = Category::onlyTrashed()->findOrFail($category);
+        $trashedCategory->restore();
+
+        return redirect()->route('categories.index', ['trashed' => 1])
+            ->with('success', 'Categoría restaurada.');
     }
 }

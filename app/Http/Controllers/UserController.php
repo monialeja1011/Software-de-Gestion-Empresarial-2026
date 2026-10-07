@@ -10,20 +10,30 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::with('roles')->orderBy('name')->get();
+
         return view('users.index', compact('users'));
     }
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate(['role' => ['required', Rule::in(['admin', 'vendedor'])]]);
+        $data = $request->validate([
+            'role' => ['required', Rule::in(['admin', 'vendedor', 'superadmin'])],
+        ]);
 
-        // Evita que el último administrador se quite a sí mismo el rol
-        if ($user->id === $request->user()->id && $data['role'] !== 'admin') {
-            return back()->withErrors('No puedes quitarte tu propio rol de administrador.');
+        // Evita dejar el sistema sin ningún superadmin.
+        if (
+            $user->hasRole('superadmin')
+            && $data['role'] !== 'superadmin'
+            && User::role('superadmin')->count() <= 1
+        ) {
+            return back()->withErrors(
+                'No puedes quitar el rol al único superadmin.'
+            );
         }
 
-        $user->update($data);
+        // Cambia la relación de Spatie, no una columna en users.
+        $user->syncRoles([$data['role']]);
 
         return back()->with('success', 'Rol actualizado.');
     }
