@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -33,6 +34,7 @@ class RolePermissionSeeder extends Seeder
             'editar-clientes',
             'eliminar-clientes',
             'restaurar-clientes',
+
             'ver-proveedores',
             'buscar-proveedores',
             'crear-proveedores',
@@ -44,6 +46,7 @@ class RolePermissionSeeder extends Seeder
             'crear-ventas',
             'editar-ventas',
             'eliminar-ventas',
+            'ver-reportes',
 
             'ver-compras',
             'buscar-compras',
@@ -100,6 +103,7 @@ class RolePermissionSeeder extends Seeder
             'ver-compras',
             'crear-compras',
         ]);
+
         $superadmin->syncPermissions(Permission::all());
     }
 }

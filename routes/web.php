@@ -122,10 +122,12 @@ Route::post('sales', [SaleController::class, 'store'])
     ->name('sales.store');
 
 Route::get('sales/{sale}', [SaleController::class, 'show'])
+    ->withTrashed()
     ->middleware('permission:ver-ventas')
     ->name('sales.show');
 
 Route::delete('sales/{sale}', [SaleController::class, 'destroy'])
+    ->withTrashed()
     ->middleware('permission:eliminar-ventas')
     ->name('sales.destroy');
 

@@ -2,104 +2,107 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSaleRequest;
 use App\Models\Client;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
-use Illuminate\Http\Request;
+use App\Services\SaleService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class SaleController extends Controller
 {
     public function index()
     {
-        $sales = Sale::with(['client', 'paymentMethod'])->latest('id')->paginate(15);
+        // withTrashed permite que el administrador consulte ventas anuladas.
+        $sales = Sale::withTrashed()
+            ->with(['client', 'paymentMethod', 'user'])
+            ->latest('id')
+            ->paginate(15);
+
         return view('sales.index', compact('sales'));
     }
 
     public function create()
     {
         return view('sales.create', [
-            'clients'  => Client::where('active', true)->orderBy('name')->get(),
-            'methods'  => PaymentMethod::where('active', true)->orderBy('name')->get(),
-            'products' => Product::where('active', true)->where('stock', '>', 0)->orderBy('name')
-                            ->get(['id', 'name', 'price', 'stock']),
+            'clients' => Client::where('active', true)->orderBy('name')->get(),
+            'methods' => PaymentMethod::where('active', true)->orderBy('name')->get(),
+            'products' => Product::where('active', true)
+                ->where('stock', '>', 0)
+                ->orderBy('name')
+                ->get(['id', 'name', 'price', 'stock']),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreSaleRequest $request, SaleService $service)
     {
-        $data = $request->validate([
-            'client_id'         => ['required', 'exists:clients,id'],
-            'payment_method_id' => ['required', 'exists:payment_methods,id'],
-            'sale_date'         => ['required', 'date'],
-            'items'             => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'exists:products,id', 'distinct'],
-            'items.*.quantity'   => ['required', 'integer', 'min:1'],
-        ]);
+        $sale = $service->register(
+            $request->validated(),
+            $request->user()->id
+        );
 
-        $sale = DB::transaction(function () use ($data) {
-            $sale = Sale::create([
-                'client_id'         => $data['client_id'],
-                'payment_method_id' => $data['payment_method_id'],
-                'sale_date'         => $data['sale_date'],
-                'total'             => 0,
-                'active'            => true,
-            ]);
-
-            $total = 0;
-
-            foreach ($data['items'] as $item) {
-                $product = Product::lockForUpdate()->findOrFail($item['product_id']);
-
-                if ($product->stock < $item['quantity']) {
-                    throw ValidationException::withMessages([
-                        'items' => "Stock insuficiente para «{$product->name}» (disponible: {$product->stock}).",
-                    ]);
-                }
-
-                $subtotal = round($product->price * $item['quantity'], 2);
-
-                $sale->details()->create([
-                    'product_id' => $product->id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $product->price,
-                    'subtotal'   => $subtotal,
-                ]);
-
-                $product->decrement('stock', $item['quantity']);
-                $total += $subtotal;
-            }
-
-            $sale->update(['total' => $total]);
-
-            return $sale;
-        });
-
-        return redirect()->route('sales.show', $sale)->with('success', 'Venta registrada.');
+        return redirect()
+            ->route('sales.show', $sale)
+            ->with('success', "Venta {$sale->invoice_number} registrada correctamente.");
     }
 
     public function show(Sale $sale)
     {
-        $sale->load(['client', 'paymentMethod', 'details.product']);
+        $sale->load([
+            'client',
+            'paymentMethod',
+            'user',
+            'details.product',
+        ]);
+
         return view('sales.show', compact('sale'));
     }
 
-    /** Anula la venta y devuelve el stock */
+    /** Anula la venta y devuelve el stock, sin borrar su registro. */
     public function destroy(Sale $sale)
     {
-        if (! $sale->active) {
-            return back()->withErrors('La venta ya estaba anulada.');
-        }
+        $anulada = DB::transaction(function () use ($sale) {
+            // Vuelve a leer y bloquea la venta para evitar anularla dos veces.
+            $ventaBloqueada = Sale::query()
+                ->lockForUpdate()
+                ->findOrFail($sale->id);
 
-        DB::transaction(function () use ($sale) {
-            foreach ($sale->details as $detail) {
-                Product::whereKey($detail->product_id)->increment('stock', $detail->quantity);
+            if (! $ventaBloqueada->active || $ventaBloqueada->status === 'anulada') {
+                return false;
             }
-            $sale->update(['active' => false]);
+
+            $ventaBloqueada->load('details');
+
+            foreach ($ventaBloqueada->details as $detail) {
+                $product = Product::withTrashed()
+                    ->lockForUpdate()
+                    ->find($detail->product_id);
+
+                if ($product) {
+                    $product->increment('stock', $detail->quantity);
+                }
+            }
+
+            $ventaBloqueada->update([
+                'status' => 'anulada',
+                'active' => false,
+            ]);
+
+            // Soft Delete: la venta queda guardada con deleted_at.
+            $ventaBloqueada->delete();
+
+            return true;
         });
 
-        return back()->with('success', 'Venta anulada y stock devuelto.');
+        if (! $anulada) {
+            return back()->withErrors([
+                'sale' => 'Esta venta ya estaba anulada.',
+            ]);
+        }
+
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Venta anulada y stock devuelto.');
     }
 }

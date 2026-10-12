@@ -11,7 +11,13 @@ class SaleDetail extends Model
         'product_id',
         'quantity',
         'price',
-        'subtotal'
+        'subtotal',
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'price' => 'decimal:2',
+        'subtotal' => 'decimal:2',
     ];
 
     public function sale()
@@ -21,7 +27,6 @@ class SaleDetail extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 }
-

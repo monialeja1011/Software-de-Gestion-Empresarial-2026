@@ -60,7 +60,7 @@
                             type="search"
                             value="{{ $search }}"
                             placeholder="Nombre, descripción o categoría"
-                            class="rounded border-gray-300"
+                            class="w-full rounded border-gray-300"
                         >
                     </div>
 

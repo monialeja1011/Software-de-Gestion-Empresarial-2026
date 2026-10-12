@@ -1,0 +1,31 @@
+ README.md                                                                  |  85 [32m+++++[m[31m-------------------[m
+ ale->details->map(fn ($detail) => [                                        |  43 [32m+++++++++++++[m
+ app/Http/Controllers/DashboardController.php                               |  48 [32m++++++++++++[m[31m--[m
+ app/Http/Controllers/SaleController.php                                    | 137 [32m++++++++++++++++++++[m[31m-------------------[m
+ app/Http/Requests/StoreSaleRequest.php                                     |  59 [32m+++++++++++++++++[m
+ app/Models/Sale.php                                                        |  33 [32m+++++++++[m[31m-[m
+ app/Models/SaleDetail.php                                                  |  13 [32m++[m[31m--[m
+ app/Services/SaleService.php                                               | 100 [32m+++++++++++++++++++++++++++++[m
+ database/migrations/2026_10_12_220825_add_class9_fields_to_sales_table.php |  60 [32m+++++++++++++++++[m
+ database/seeders/RolePermissionSeeder.php                                  |   4 [32m++[m
+ docs/evidencias/Clase9/01-clientes-index.png                               | Bin [31m0[m -> [32m46733[m bytes
+ docs/evidencias/Clase9/02-nueva-venta-totales.png                          | Bin [31m0[m -> [32m46268[m bytes
+ docs/evidencias/Clase9/03-mysql-venta-stock.png                            | Bin [31m0[m -> [32m51033[m bytes
+ docs/evidencias/Clase9/04-error-stock-insuficiente.png                     | Bin [31m0[m -> [32m50945[m bytes
+ docs/evidencias/Clase9/05-dashboard-kpis-top5.png                          | Bin [31m0[m -> [32m167136[m bytes
+ docs/evidencias/Clase9/06-ventas-anulada-stock-devuelto.png                | Bin [31m0[m -> [32m74251[m bytes
+ docs/evidencias/{clase-7 => clase8}/01-roles.png                           | Bin
+ docs/evidencias/{clase-7 => clase8}/02-usuario-y-rol.png                   | Bin
+ docs/evidencias/{clase-7 => clase8}/03-permisos-rutas.png                  | Bin
+ docs/evidencias/{clase-7 => clase8}/04-producto-eliminado-exito.png        | Bin
+ docs/evidencias/{clase-7 => clase8}/05-soft-delete-deleted-at.png          | Bin
+ docs/evidencias/{clase-7 => clase8}/06-acceso-403.png                      | Bin
+ docs/evidencias/{clase-7 => clase8}/07-productos-busqueda-filtros.png      | Bin
+ docs/evidencias/{clase-7 => clase8}/08-menu-almacenista.png                | Bin
+ resources/views/dashboard.blade.php                                        |  52 [32m++++++++++++[m[31m---[m
+ resources/views/products/index.blade.php                                   |   2 [32m+[m[31m-[m
+ resources/views/sales/create.blade.php                                     | 228 [32m+++++++++++++++++++++++++++++++++++++++++++++++++[m[31m----------------[m
+ resources/views/sales/index.blade.php                                      | 117 [32m++++++++++++++++++++++[m[31m-----------[m
+ resources/views/sales/show.blade.php                                       | 125 [32m+++++++++++++++++++++++++++[m[31m---------[m
+ routes/web.php                                                             |   2 [32m+[m
+ 30 files changed, 825 insertions(+), 283 deletions(-)

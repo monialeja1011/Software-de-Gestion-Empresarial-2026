@@ -75,10 +75,44 @@ Para compilar los estilos automáticamente durante el desarrollo:
 ./vendor/bin/sail npm run dev
 ```
 
-## Evidencias de la Clase 7
+## Evidencias de la Clase 8
 
 Las capturas de roles, permisos, filtros, eliminación lógica y autorización se guardan en:
 
 ```text
-docs/evidencias/clase-7/
+docs/evidencias/clase8/
 ```
+
+## Entrega de la clase 9
+
+Se implementó el registro y la anulación de ventas con control de inventario, cálculo de subtotal, IVA y total, y un dashboard con indicadores y Top 5.
+
+### Evidencias
+
+1. **Módulo de clientes**
+
+   ![Listado de clientes](docs/evidencias/Clase9/01-clientes-index.png)
+
+2. **Nueva venta con productos y totales**
+
+   ![Formulario de nueva venta](docs/evidencias/Clase9/02-nueva-venta-totales.png)
+
+3. **Venta, detalles y stock en MySQL**
+
+   ![Venta y stock en MySQL](docs/evidencias/Clase9/03-mysql-venta-stock.png)
+
+4. **Intento de venta sin stock suficiente**
+
+   ![Error de stock insuficiente](docs/evidencias/Clase9/04-error-stock-insuficiente.png)
+
+5. **Dashboard con KPIs y Top 5**
+
+   ![Dashboard de la clase 9](docs/evidencias/Clase9/05-dashboard-kpis-top5.png)
+
+6. **Anulación de venta y devolución de stock**
+
+   ![Venta anulada y stock devuelto](docs/evidencias/Clase9/06-ventas-anulada-stock-devuelto.png)
+
+### Repositorio
+
+[Software de Gestión Empresarial 2026 en GitHub](https://github.com/monialeja1011/Software-de-Gestion-Empresarial-2026)
