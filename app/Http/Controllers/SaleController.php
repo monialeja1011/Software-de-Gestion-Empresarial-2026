@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Services\SaleService;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SaleController extends Controller
 {
@@ -31,7 +32,7 @@ class SaleController extends Controller
             'products' => Product::where('active', true)
                 ->where('stock', '>', 0)
                 ->orderBy('name')
-                ->get(['id', 'name', 'price', 'stock']),
+                ->get(['id', 'name', 'price', 'stock', 'iva_percentage']),
         ]);
     }
 
@@ -45,6 +46,15 @@ class SaleController extends Controller
         return redirect()
             ->route('sales.show', $sale)
             ->with('success', "Venta {$sale->invoice_number} registrada correctamente.");
+    }
+
+        public function pdf(Sale $sale)
+    {
+        $sale->load(['client', 'paymentMethod', 'user', 'details.product']);
+
+        return Pdf::loadView('sales.pdf', compact('sale'))
+            ->setPaper('letter')
+            ->download(($sale->invoice_number ?? 'venta-'.$sale->id).'.pdf');
     }
 
     public function show(Sale $sale)

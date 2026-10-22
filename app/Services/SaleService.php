@@ -12,7 +12,7 @@ class SaleService
     public function register(array $data, int $userId): Sale
     {
         return DB::transaction(function () use ($data, $userId) {
-            // Si un producto viene en varias filas, suma sus cantidades.
+            // Si un producto aparece en varias filas, se consolidan las cantidades.
             $quantities = [];
 
             foreach ($data['items'] as $item) {
@@ -23,9 +23,10 @@ class SaleService
 
             $items = [];
             $subtotal = 0;
+            $tax = 0;
+            $total = 0;
 
             foreach ($quantities as $productId => $quantity) {
-                // Bloquea el producto mientras se procesa la venta.
                 $product = Product::query()
                     ->lockForUpdate()
                     ->findOrFail($productId);
@@ -43,23 +44,36 @@ class SaleService
                     ]);
                 }
 
+                // El precio público del producto ya incluye el IVA.
                 $unitPrice = (float) $product->price;
-                $lineSubtotal = round($unitPrice * $quantity, 2);
+                $ivaPercentage = (float) $product->iva_percentage;
+                $lineTotal = round($unitPrice * $quantity, 2);
+
+                if ($ivaPercentage > 0) {
+                    $lineSubtotal = round(
+                        $lineTotal / (1 + ($ivaPercentage / 100)),
+                        2
+                    );
+                    $ivaAmount = round($lineTotal - $lineSubtotal, 2);
+                } else {
+                    $lineSubtotal = $lineTotal;
+                    $ivaAmount = 0;
+                }
+
                 $subtotal = round($subtotal + $lineSubtotal, 2);
+                $tax = round($tax + $ivaAmount, 2);
+                $total = round($total + $lineTotal, 2);
 
                 $items[] = [
                     'product' => $product,
                     'quantity' => $quantity,
                     'price' => $unitPrice,
                     'subtotal' => $lineSubtotal,
+                    'iva_percentage' => $ivaPercentage,
+                    'iva_amount' => $ivaAmount,
                 ];
             }
 
-            $tax = round($subtotal * 0.19, 2);
-            $total = round($subtotal + $tax, 2);
-
-            // Se crea primero sin número. Luego se usa el ID para evitar
-            // repetir números de factura si dos ventas ocurren a la vez.
             $sale = Sale::create([
                 'invoice_number' => null,
                 'client_id' => $data['client_id'],
@@ -75,7 +89,7 @@ class SaleService
             ]);
 
             $sale->update([
-                'invoice_number' => 'FV-'.str_pad(
+                'invoice_number' => 'CV-'.str_pad(
                     (string) $sale->id,
                     5,
                     '0',
@@ -89,6 +103,8 @@ class SaleService
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'subtotal' => $item['subtotal'],
+                    'iva_percentage' => $item['iva_percentage'],
+                    'iva_amount' => $item['iva_amount'],
                 ]);
 
                 $item['product']->decrement('stock', $item['quantity']);

@@ -12,6 +12,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -121,6 +122,11 @@ Route::post('sales', [SaleController::class, 'store'])
     ->middleware('permission:crear-ventas')
     ->name('sales.store');
 
+Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])
+    ->withTrashed()
+    ->middleware('permission:ver-ventas')
+    ->name('sales.pdf');
+
 Route::get('sales/{sale}', [SaleController::class, 'show'])
     ->withTrashed()
     ->middleware('permission:ver-ventas')
@@ -144,6 +150,10 @@ Route::post('purchases', [PurchaseController::class, 'store'])
     ->middleware('permission:crear-compras')
     ->name('purchases.store');
 
+Route::get('purchases/{purchase}/pdf', [PurchaseController::class, 'pdf'])
+    ->middleware('permission:ver-compras')
+    ->name('purchases.pdf');
+
 Route::get('purchases/{purchase}', [PurchaseController::class, 'show'])
     ->middleware('permission:ver-compras')
     ->name('purchases.show');
@@ -151,6 +161,10 @@ Route::get('purchases/{purchase}', [PurchaseController::class, 'show'])
 Route::delete('purchases/{purchase}', [PurchaseController::class, 'destroy'])
     ->middleware('permission:eliminar-compras')
     ->name('purchases.destroy');
+
+Route::patch('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])
+    ->middleware('permission:recibir-compras')
+    ->name('purchases.receive');
 
 // Proveedores: cada acción requiere su permiso
 Route::get('providers', [ProviderController::class, 'index'])

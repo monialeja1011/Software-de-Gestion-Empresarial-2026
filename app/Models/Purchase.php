@@ -11,10 +11,24 @@ class Purchase extends Model
         'payment_method_id',
         'purchase_date',
         'total',
-        'active'
+        'active',
+        'order_number',
+        'status',
+        'expected_delivery_date',
+        'payment_term_days',
+        'due_date',
+        'received_at',
+        'observations',
+        'payment_status',
     ];
 
-    protected $casts = ['purchase_date' => 'date', 'active' => 'boolean'];
+    protected $casts = [
+        'purchase_date' => 'date',
+        'expected_delivery_date' => 'date',
+        'due_date' => 'date',
+        'received_at' => 'datetime',
+        'active' => 'boolean',
+    ];
 
     public function provider()
     {
@@ -30,5 +44,9 @@ class Purchase extends Model
     {
         return $this->hasMany(PurchaseDetail::class);
     }
-}
 
+    public function receipts()
+    {
+        return $this->hasMany(PurchaseReceipt::class);
+    }
+}

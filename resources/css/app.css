@@ -1,3 +1,114 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tema global de Bella Rosa */
+:root {
+    color-scheme: light;
+    --beauty-rose-50: #fff7fb;
+    --beauty-rose-100: #ffeaf4;
+    --beauty-rose-200: #fbcfe3;
+    --beauty-rose-500: #ec4899;
+    --beauty-rose-600: #db2777;
+    --beauty-rose-700: #be185d;
+    --beauty-plum: #4a2439;
+    --beauty-shadow: 0 14px 32px rgba(190, 24, 93, 0.12),
+        0 4px 10px rgba(74, 36, 57, 0.07);
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    color: var(--beauty-plum);
+    background:
+        radial-gradient(ellipse at top left, #fff 0%, transparent 48%),
+        linear-gradient(135deg, #fff7fb 0%, #fff0f6 55%, #fce7f3 100%);
+}
+
+/* Fondos generales de las páginas */
+[class~="bg-gray-100"],
+[class~="bg-slate-100"],
+[class~="bg-gray-50"],
+[class~="bg-slate-50"] {
+    background-color: var(--beauty-rose-50) !important;
+}
+
+/* Navegación y encabezados */
+nav {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 24px rgba(190, 24, 93, 0.09);
+    backdrop-filter: blur(12px);
+}
+
+header.bg-white {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 24px rgba(190, 24, 93, 0.08) !important;
+}
+
+/* Tarjetas elevadas: sin contorno visible y con sombra rosa suave */
+[class~="bg-white"][class~="shadow"],
+[class~="bg-white"][class~="shadow-sm"],
+[class~="bg-white"][class~="shadow-md"],
+[class~="bg-white"][class~="shadow-lg"] {
+    border-color: transparent !important;
+    box-shadow: var(--beauty-shadow) !important;
+}
+
+/* Botones principales con el mismo color en todos los módulos */
+[class~="bg-blue-600"],
+[class~="bg-indigo-600"],
+[class~="bg-cyan-600"],
+[class~="bg-green-600"],
+[class~="bg-pink-600"] {
+    color: #fff !important;
+    background-color: var(--beauty-rose-600) !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 18px rgba(219, 39, 119, 0.24);
+    transition: transform 160ms ease, box-shadow 160ms ease,
+        background-color 160ms ease;
+}
+
+[class~="bg-blue-600"]:hover,
+[class~="bg-indigo-600"]:hover,
+[class~="bg-cyan-600"]:hover,
+[class~="bg-green-600"]:hover,
+[class~="bg-pink-600"]:hover {
+    background-color: var(--beauty-rose-700) !important;
+    box-shadow: 0 11px 22px rgba(190, 24, 93, 0.28);
+    transform: translateY(-1px);
+}
+
+/* Enlaces que antes eran azules */
+[class~="text-blue-600"],
+[class~="text-blue-700"],
+[class~="text-blue-800"],
+[class~="text-cyan-700"] {
+    color: var(--beauty-rose-700) !important;
+}
+
+/* Colores de selección y foco en formularios */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--beauty-rose-500) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.17) !important;
+}
+
+/* Suaviza algunos bordes grises, conservando separadores de tablas */
+[class~="border-gray-100"],
+[class~="border-gray-200"],
+[class~="border-slate-200"],
+[class~="border-slate-300"] {
+    border-color: #f8d9e8 !important;
+}
+
+/* Panel destacado del dashboard: degradado rosa */
+[class*="from-slate-950"][class*="to-cyan-950"] {
+    background-image: linear-gradient(120deg, #831843, #be185d, #ec4899) !important;
+}

@@ -53,6 +53,7 @@ class RolePermissionSeeder extends Seeder
             'crear-compras',
             'editar-compras',
             'eliminar-compras',
+            'recibir-compras',
 
             'ver-metodos-pago',
             'crear-metodos-pago',
@@ -73,8 +74,6 @@ class RolePermissionSeeder extends Seeder
         $superadmin = Role::findOrCreate('superadmin', 'web');
         $almacenista = Role::findOrCreate('almacenista', 'web');
 
-        // El admin administra la operación y los usuarios.
-        // Solo el superadmin gestiona roles y permisos.
         $admin->syncPermissions(
             Permission::whereNotIn('name', [
                 'gestionar-roles',
@@ -102,6 +101,7 @@ class RolePermissionSeeder extends Seeder
             'buscar-categorias',
             'ver-compras',
             'crear-compras',
+            'recibir-compras',
         ]);
 
         $superadmin->syncPermissions(Permission::all());
