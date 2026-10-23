@@ -186,8 +186,9 @@ erDiagram
     PURCHASE_RECEIPTS ||--|{ PURCHASE_RECEIPT_DETAILS : contiene
     PURCHASE_DETAILS ||--o{ PURCHASE_RECEIPT_DETAILS : recibido
 
-    ```
-    ## Diccionario de datos
+```
+
+## Diccionario de datos
 
 Resumen de las entidades principales. Las migraciones de `database/migrations` contienen los tipos, restricciones, valores predeterminados y llaves foráneas.
 
