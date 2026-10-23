@@ -1,373 +1,119 @@
-# Sistema de Gestión Empresarial (SGE)
+## Análisis del negocio
 
-## Información del proyecto
+### Situación que atiende el sistema
 
-| Dato | Descripción |
+Una empresa comercial necesita mantener conectadas sus operaciones de abastecimiento, inventario y venta. Cuando las órdenes de compra, las recepciones y las ventas se registran por separado, resulta difícil saber cuántas unidades están disponibles, qué pedidos aún no llegan y qué productos se venden con mayor frecuencia.
+
+El SGE centraliza esta información en una aplicación. Cada operación queda relacionada con sus responsables, productos, cantidades, fechas y valores. Esto permite consultar el historial y mantener coherencia entre las compras, las recepciones y las ventas.
+
+### Actores del sistema
+
+| Actor | Responsabilidad en la operación |
 | --- | --- |
-| Nombre | Sistema de Gestión Empresarial (SGE) |
-| Tipo | Aplicación web académica |
-| Propósito | Administrar inventario, ventas, compras y usuarios de una empresa comercial |
-| Moneda | Pesos colombianos (COP) |
-| Base de datos | MySQL |
-| Estado | Aplicación funcional en entorno local con Docker y Laravel Sail |
+| Administrador | Gestionar las operaciones habilitadas para administración, consultar módulos y mantener usuarios según sus permisos. |
+| Superadministrador | Administrar el sistema, incluidos roles y permisos. |
+| Vendedor | Consultar productos y clientes autorizados, registrar ventas y consultar sus operaciones según los permisos asignados. |
+| Almacenista | Consultar productos, preparar órdenes de compra y registrar la llegada total o parcial de la mercancía. |
+| Cliente | Persona o entidad a quien se registra una venta. Sus datos quedan asociados a la operación. |
+| Proveedor | Persona o entidad que abastece productos y queda asociada a las órdenes de compra. |
 
-## Resumen
+El acceso efectivo depende de los permisos del usuario y del rol activo seleccionado para la sesión. La interfaz puede ocultar acciones no autorizadas, pero la autorización también se comprueba en el servidor.
 
-El Sistema de Gestión Empresarial centraliza la administración de productos, categorías, clientes, proveedores, ventas, compras, medios de pago y usuarios.
+### Alcance funcional
 
-El proyecto incluye control de acceso por roles y permisos, manejo de inventario, cálculo de impuestos por producto, órdenes de compra, recepción parcial de mercancía, generación de documentos PDF y un dashboard con indicadores.
+El alcance implementado comprende el catálogo de productos y categorías, el registro de clientes y proveedores, las ventas, las órdenes de compra, las recepciones, el control de inventario, los medios de pago, la gestión de usuarios y el dashboard.
 
-El catálogo de demostración contiene productos de distintas categorías, como tecnología, aseo y cuidado personal, hogar, alimentos y bebidas.
+El sistema genera PDF para consultar o descargar comprobantes internos de ventas y órdenes de compra. Estos documentos no constituyen facturas electrónicas autorizadas y la aplicación no tiene integración con la DIAN.
 
-> Los PDF generados son documentos internos del sistema. La aplicación no está integrada con la DIAN y no genera facturas electrónicas autorizadas.
+## Procesos principales
 
-## Objetivos
+### Abastecimiento y recepción
 
-### Objetivo general
+1. El usuario autorizado selecciona un proveedor y registra la fecha de la orden, las condiciones de pago, los productos solicitados, las cantidades y los costos cotizados.
+2. El sistema guarda la orden con un consecutivo `OC-000001`, su detalle y el estado correspondiente.
+3. La creación de la orden no cambia las existencias. Las unidades solicitadas todavía no se consideran disponibles.
+4. Cuando llega el pedido, el almacenista abre la orden y registra las cantidades recibidas para cada producto.
+5. El sistema compara cada cantidad con las unidades pendientes. Si se intenta registrar un exceso, rechaza la recepción.
+6. La recepción puede ser parcial. Las unidades pendientes permanecen en la orden para una entrega posterior.
+7. El stock aumenta solo por las unidades registradas como recibidas. La fecha, el usuario y las observaciones de cada recepción quedan asociados al historial.
+8. Cuando se completa la orden, el sistema actualiza su estado de recepción.
 
-Desarrollar una aplicación web que permita gestionar las operaciones básicas de una empresa comercial y controlar el acceso de los usuarios según sus funciones.
+### Venta y actualización del inventario
 
-### Objetivos específicos
+1. El usuario autorizado selecciona el cliente, el medio de pago y los productos que va a vender.
+2. La aplicación carga el precio público y la tarifa de IVA configurados para cada producto.
+3. Antes de registrar la operación, el sistema comprueba que las cantidades solicitadas sean válidas y que haya stock suficiente.
+4. La venta y sus detalles se guardan dentro de una transacción de base de datos. Si ocurre un error, la operación no debe quedar parcialmente registrada.
+5. Al confirmarse la venta, se descuentan del inventario las unidades vendidas.
+6. La venta recibe un consecutivo con formato `CV-00001` y puede consultarse en pantalla o descargarse como PDF interno.
+7. Si se anula una venta, el sistema conserva el registro histórico y devuelve al inventario las unidades vendidas.
 
-- Administrar productos, categorías, clientes y proveedores.
-- Controlar las existencias del inventario mediante ventas y recepciones de compra.
-- Registrar ventas con sus detalles, impuestos y medios de pago.
-- Crear órdenes de compra sin modificar el stock hasta recibir la mercancía.
-- Gestionar usuarios, roles y permisos.
-- Consultar indicadores operativos desde un dashboard.
-- Conservar información histórica de productos y categorías eliminados lógicamente.
+### Cálculo de costo, precio público e IVA
 
-## Tecnologías utilizadas
+Cada producto almacena un costo, un porcentaje de margen, un precio público y una tarifa de IVA. Al recibirse mercancía, el sistema actualiza la información de costo y calcula el precio público de acuerdo con la configuración del producto.
 
-| Tecnología | Uso |
-| --- | --- |
-| Laravel 13 | Framework de la aplicación |
-| PHP 8.3 o superior | Lenguaje del servidor |
-| MySQL 8 | Base de datos relacional |
-| Docker y Laravel Sail | Entorno local de desarrollo |
-| Blade | Plantillas HTML del servidor |
-| Tailwind CSS | Estilos de la interfaz |
-| Alpine.js | Interacciones en las vistas |
-| Vite | Compilación de recursos |
-| Spatie Laravel Permission | Roles y permisos |
-| DomPDF | Generación de documentos PDF |
+En ventas, el precio público se trata como un precio que ya incluye el IVA cuando el producto tiene una tarifa aplicable. El comprobante muestra el desglose de la base y el impuesto, sin volver a sumar el IVA al total pagado. Cuando la tarifa configurada es cero, el producto se presenta sin IVA aplicable.
 
-## Módulos funcionales
+En compras se conservan el costo cotizado y los datos del IVA de la línea, para poder consultar cómo se calculó el total de la orden.
 
-### Dashboard
+## Seguridad y autorización
 
-Muestra información de la operación, entre ella:
+Las rutas protegidas emplean autenticación y permisos de Spatie Laravel Permission. Cada rol agrupa permisos operativos; el superadministrador dispone de permisos de administración del sistema, mientras que los roles de vendedor y almacenista tienen acceso limitado a las operaciones de su función.
 
-- Total de ventas del mes.
-- Total de compras del mes.
-- Cantidad de clientes activos.
-- Cantidad de productos activos.
-- Últimas ventas.
-- Productos con existencias bajas.
-- Productos más vendidos.
+Cuando una cuenta tiene varios roles, puede seleccionar el rol activo para la sesión. La aplicación utiliza esa selección al autorizar las acciones. Además, las rutas comprueban el permiso en el servidor: ocultar un botón en la interfaz no sustituye esta validación.
 
-### Productos e inventario
+La matriz de este README resume los permisos por módulo. La configuración completa debe contrastarse con `database/seeders/RolePermissionSeeder.php`, donde se declaran los nombres de permisos y su asignación a cada rol.
 
-Permite:
+## Validaciones y resultados observados
 
-- Crear, consultar y editar productos.
-- Asignar productos a categorías.
-- Registrar costo, margen de ganancia, precio de venta e IVA.
-- Consultar las existencias.
-- Buscar y filtrar productos.
-- Desactivar o eliminar lógicamente productos sin perder su historial relacionado.
-
-Cuando se recibe una compra, el sistema actualiza el costo del producto y calcula de nuevo su precio público usando el margen configurado y la tarifa de IVA de venta del producto.
-
-### Categorías
-
-Permite organizar productos por tipo. Las categorías admiten búsqueda, consulta y eliminación lógica, conservando las relaciones históricas necesarias.
-
-### Clientes y proveedores
-
-Permite registrar y consultar la información de clientes y proveedores vinculados a las ventas y las compras.
-
-### Ventas
-
-Permite:
-
-- Seleccionar cliente, medio de pago, fecha y productos.
-- Registrar cantidades y comprobar existencias.
-- Calcular subtotales, IVA y total.
-- Descontar del inventario las unidades vendidas.
-- Consultar el detalle de la venta.
-- Descargar un comprobante interno en PDF.
-- Anular ventas y devolver al inventario las cantidades correspondientes.
-
-Las ventas utilizan consecutivos con formato `CV-00001`.
-
-### Compras y órdenes de compra
-
-Permite:
-
-- Crear órdenes con proveedor, productos, cantidades, costo unitario y medio de pago.
-- Registrar fecha de la orden, fecha estimada de llegada y plazo de pago.
-- Consultar el estado de la orden y del pago.
-- Registrar observaciones.
-- Descargar la orden en PDF.
-- Recibir la mercancía total o parcialmente.
-- Guardar observaciones de faltantes, averías u otras novedades.
-
-Crear la orden no aumenta el inventario. El stock se actualiza únicamente al registrar la recepción. El sistema impide recibir más unidades que las que permanecen pendientes.
-
-Las órdenes utilizan consecutivos con formato `OC-000001`.
-
-### Usuarios, roles y permisos
-
-La aplicación utiliza Spatie Laravel Permission para asignar permisos a roles y proteger las rutas y acciones. Las vistas también pueden ocultar acciones que el usuario no tiene autorizadas; la seguridad se valida además en el servidor.
-
-## Reglas de negocio
-
-| N.º | Regla | Módulo | Aplicación |
-| --- | --- | --- | --- |
-| 1 | Una venta debe tener cliente, medio de pago, fecha y al menos un producto. | Ventas | Validación de la solicitud de venta |
-| 2 | Las cantidades deben ser enteros positivos. | Ventas y compras | Validaciones de formularios |
-| 3 | La venta no puede exceder las existencias disponibles. | Ventas | `app/Services/SaleService.php` |
-| 4 | La venta y sus detalles se registran dentro de una transacción. | Ventas | `app/Services/SaleService.php` |
-| 5 | Al registrar una venta se descuentan del inventario las unidades vendidas. | Ventas e inventario | `app/Services/SaleService.php` |
-| 6 | Al anular una venta se conserva su historial y se devuelve el stock. | Ventas e inventario | `app/Http/Controllers/SaleController.php` |
-| 7 | Cada producto tiene una tarifa de IVA propia. | Productos y ventas | Modelo y formulario de producto |
-| 8 | El precio público incluye el IVA cuando aplica; el impuesto se desglosa sin sumarlo dos veces al total. | Ventas | `app/Services/SaleService.php` |
-| 9 | Crear una orden de compra no modifica el inventario. | Compras | `app/Http/Controllers/PurchaseController.php` |
-| 10 | La recepción de mercancía puede ser parcial. | Compras | Acción de recepción de compra |
-| 11 | El inventario solo aumenta por las unidades recibidas. | Compras e inventario | Acción de recepción de compra |
-| 12 | No se puede recibir más cantidad que la pendiente en la orden. | Compras | Validación de recepción |
-| 13 | Cada recepción puede guardar observaciones sobre novedades del pedido. | Compras | Formulario y registro de recepción |
-| 14 | Las operaciones restringidas requieren permiso en el servidor. | Seguridad | Middleware de permisos en rutas |
-| 15 | La eliminación lógica conserva productos y categorías relacionados con operaciones históricas. | Productos, categorías, ventas y compras | Soft deletes y relaciones de modelos |
-
-## Roles y matriz de seguridad
-
-La asignación definitiva se encuentra en `database/seeders/RolePermissionSeeder.php`. La siguiente matriz resume el alcance configurado:
-
-| Acción | Superadmin | Admin | Vendedor | Almacenista |
-| --- | --- | --- | --- | --- |
-| Consultar productos | Sí | Sí | Sí | Sí |
-| Buscar productos | Sí | Sí | Sí | Sí |
-| Crear o editar productos | Sí | Sí | No | Sí |
-| Consultar categorías | Sí | Sí | No | Sí |
-| Consultar clientes | Sí | Sí | Sí | No |
-| Crear clientes | Sí | Sí | Sí | No |
-| Consultar ventas | Sí | Sí | Sí | No |
-| Crear ventas | Sí | Sí | Sí | No |
-| Consultar compras | Sí | Sí | No | Sí |
-| Crear órdenes de compra | Sí | Sí | No | Sí |
-| Recibir compras | Sí | Sí | No | Sí |
-| Gestionar usuarios | Sí | Sí | No | No |
-| Gestionar roles y permisos | Sí | No | No | No |
-
-El rol administrador recibe los permisos operativos excepto los de gestión de roles y permisos. El superadministrador recibe todos los permisos definidos. Las acciones exactas pueden consultarse en `RolePermissionSeeder`.
-
-## Modelo de datos
-
-### Diagrama entidad-relación
-
-```mermaid
-erDiagram
-    CATEGORIES ||--o{ PRODUCTS : clasifica
-    CLIENTS ||--o{ SALES : realiza
-    USERS ||--o{ SALES : registra
-    PAYMENT_METHODS ||--o{ SALES : utiliza
-    SALES ||--|{ SALE_DETAILS : contiene
-    PRODUCTS ||--o{ SALE_DETAILS : vendido
-
-    PROVIDERS ||--o{ PURCHASES : abastece
-    PAYMENT_METHODS ||--o{ PURCHASES : utiliza
-    PURCHASES ||--|{ PURCHASE_DETAILS : solicita
-    PRODUCTS ||--o{ PURCHASE_DETAILS : solicitado
-
-    PURCHASES ||--o{ PURCHASE_RECEIPTS : recibe
-    USERS ||--o{ PURCHASE_RECEIPTS : registra
-    PURCHASE_RECEIPTS ||--|{ PURCHASE_RECEIPT_DETAILS : contiene
-    PURCHASE_DETAILS ||--o{ PURCHASE_RECEIPT_DETAILS : recibido
-
-```
-
-## Diccionario de datos
-
-Resumen de las entidades principales. Las migraciones de `database/migrations` contienen los tipos, restricciones, valores predeterminados y llaves foráneas.
-
-| Tabla | Propósito | Campos principales |
+| Escenario | Resultado esperado | Evidencia relacionada |
 | --- | --- | --- |
-| `users` | Usuarios que ingresan al sistema | `id`, `name`, `email`, `password`, timestamps |
-| `roles`, `permissions` y tablas relacionadas | Administración de roles y permisos | Tablas administradas por Spatie Laravel Permission |
-| `categories` | Clasificación de productos | `id`, `name`, `description`, `active`, `deleted_at`, timestamps |
-| `products` | Catálogo e inventario | `id`, `name`, `description`, `price`, `cost_price`, `markup_percentage`, `iva_percentage`, `stock`, `category_id`, `active`, `deleted_at`, timestamps |
-| `clients` | Clientes asociados a ventas | `id`, `name`, `email`, `phone`, `address`, `active`, timestamps |
-| `providers` | Proveedores asociados a compras | `id`, `name`, `email`, `phone`, `address`, `active`, timestamps |
-| `payment_methods` | Medios de pago disponibles | `id`, `name`, `active`, timestamps |
-| `sales` | Encabezado de una venta | `id`, `invoice_number`, `client_id`, `user_id`, `payment_method_id`, `sale_date`, `subtotal`, `tax`, `total`, `status`, `notes`, `active`, `deleted_at`, timestamps |
-| `sale_details` | Productos y cantidades de una venta | `id`, `sale_id`, `product_id`, `quantity`, `price`, `subtotal`, `iva_percentage`, `iva_amount`, timestamps |
-| `purchases` | Encabezado de una orden de compra | `id`, `order_number`, `provider_id`, `payment_method_id`, `purchase_date`, `expected_delivery_date`, `payment_term_days`, `due_date`, `total`, `status`, `payment_status`, `observations`, `received_at`, `active`, timestamps |
-| `purchase_details` | Líneas de productos solicitados | `id`, `purchase_id`, `product_id`, `quantity`, `received_quantity`, `price`, `subtotal`, `iva_percentage`, `iva_included`, `base_subtotal`, `iva_amount`, timestamps |
-| `purchase_receipts` | Recepciones parciales o completas de una orden | `id`, `purchase_id`, `user_id`, `received_at`, `observations`, timestamps |
-| `purchase_receipt_details` | Cantidades recibidas por cada línea | `id`, `purchase_receipt_id`, `purchase_detail_id`, `quantity`, timestamps |
+| Consultar una ruta sin el permiso requerido | El servidor rechaza el acceso con respuesta 403. | `docs/evidencias/clase8/06-acceso-403.png` |
+| Buscar y filtrar productos | El listado muestra los resultados correspondientes a los criterios ingresados. | `docs/evidencias/clase8/07-productos-busqueda-filtros.png` |
+| Registrar una venta con stock suficiente | Se registra el encabezado y el detalle; el stock disminuye por las unidades vendidas. | `docs/evidencias/Clase9/02-nueva-venta-totales.png` y `docs/evidencias/Clase9/03-mysql-venta-stock.png` |
+| Registrar una venta que supera el stock | La operación se rechaza y no debe descontar inventario. | `docs/evidencias/Clase9/04-error-stock-insuficiente.png` |
+| Anular una venta | La venta conserva su historial y las unidades se devuelven al inventario. | `docs/evidencias/Clase9/06-ventas-anulada-stock-devuelto.png` |
+| Crear una orden de compra | La orden y sus líneas quedan guardadas; el stock no aumenta por la creación de la orden. | `docs/evidencias/Clase10/02-orden-sin-stock.png` y `docs/evidencias/Clase10/03-stock-sin-recibir.png` |
+| Recibir parcialmente una orden | El stock aumenta por la cantidad recibida y las unidades restantes continúan pendientes. | `docs/evidencias/Clase10/04-recepcion-parcial-stock.png` |
+| Intentar recibir más unidades que las pendientes | El sistema valida y rechaza la sobre recepción. | `docs/evidencias/Clase10/05-rechazo-sobrerrecepcion.png` |
+| Descargar una orden de compra | Se genera el PDF interno asociado a la orden. | `docs/evidencias/Clase10/06-orden-compra-pdf.png` |
 
-## Requisitos académicos del corte
+Las capturas ilustran los escenarios documentados. Las reglas críticas de inventario también se implementan en el servidor para que no dependan únicamente de las validaciones visuales del formulario.
 
-| Criterio | Estado |
+## Interpretación de los indicadores
+
+| Indicador | Qué representa | Decisión que puede apoyar |
+| --- | --- | --- |
+| Ventas del mes | Suma de las ventas activas dentro del periodo mensual consultado. | Revisar el nivel de ventas del periodo y compararlo con otros periodos. |
+| Compras del mes | Suma de las compras activas registradas dentro del periodo mensual consultado. | Revisar el volumen de abastecimiento y los compromisos de compra. |
+| Clientes activos | Número de clientes habilitados. | Conocer el tamaño actual de la cartera disponible para operar. |
+| Productos activos | Número de productos habilitados. | Consultar la amplitud del catálogo disponible. |
+| Stock bajo | Productos cuya existencia está en o por debajo del umbral configurado en el dashboard. | Identificar productos que conviene revisar para una posible reposición. |
+| Productos más vendidos | Productos ordenados según las unidades vendidas. | Reconocer los artículos con mayor movimiento y apoyar decisiones de abastecimiento. |
+| Últimas ventas | Operaciones registradas recientemente. | Revisar de forma rápida la actividad comercial reciente. |
+
+Los indicadores son resúmenes de consulta. La decisión final sobre compras, precios o reposición debe considerar además el detalle de cada producto y sus movimientos.
+
+## Arquitectura y organización del código
+
+La aplicación sigue la organización habitual de Laravel:
+
+| Componente | Responsabilidad en este proyecto |
 | --- | --- |
-| Roles y permisos aplicados a rutas y acciones | ✅ Implementado |
-| Validación de acceso no autorizado con respuesta 403 | ✅ Comprobado |
-| Búsqueda, filtros y paginación en listados | ✅ Implementado en los módulos correspondientes |
-| Eliminación lógica de productos y categorías | ✅ Implementado |
-| Registro de ventas con encabezado y detalles | ✅ Implementado |
-| Control de inventario en ventas y anulación | ✅ Implementado |
-| Cálculo y desglose de IVA por producto | ✅ Implementado en ventas y compras |
-| Dashboard con indicadores y productos más vendidos | ✅ Implementado |
-| Órdenes de compra sin movimiento anticipado de inventario | ✅ Implementado |
-| Recepción parcial y actualización del inventario recibido | ✅ Implementado |
-| Validación de cantidades recibidas contra unidades pendientes | ✅ Implementado y comprobado |
-| Generación de PDF para venta y orden de compra | ✅ Implementado como documento interno |
-| Diagrama entidad-relación | ✅ Incluido en este README |
-| Diccionario de datos | ✅ Incluido en este README |
-| Reglas de negocio | ✅ Documentadas con el módulo y su implementación |
-| Matriz de seguridad | ✅ Documentada |
-| Registros de prueba | ✅ Verificados: 20 registros en cada entidad principal |
-| Evidencias numeradas de clases 8 y 9 | ✅ Incluidas |
-| Evidencias numeradas de clase 10 | 🟡 Pendiente de guardar las capturas reales |
+| `app/Models` | Representar las entidades y relaciones de la base de datos, como productos, ventas, compras y recepciones. |
+| `app/Http/Controllers` | Atender las rutas, coordinar las solicitudes y seleccionar las vistas o redirecciones. |
+| `app/Http/Requests` | Validar los datos recibidos en formularios cuando existe una clase Form Request para la operación. |
+| `app/Services` | Encapsular operaciones de negocio que requieren coordinación y transacciones, como el registro de ventas. |
+| `database/migrations` | Definir la estructura y evolución del esquema de la base de datos. |
+| `database/seeders` | Crear datos iniciales y configurar roles, permisos y cuentas previstas para desarrollo. |
+| `resources/views` | Contener las plantillas Blade de los módulos y documentos PDF. |
+| `routes` | Declarar las rutas web y sus protecciones de autenticación y permisos. |
+| `docs/evidencias` | Organizar las capturas de comprobación por clase y tema. |
 
-## Conteo de datos de prueba
+Las operaciones que modifican simultáneamente una transacción comercial y el inventario deben ejecutarse de forma coordinada para evitar guardar solo una parte de la operación.
 
-Conteos verificados en la base de datos local:
+## Datos de prueba y reproducibilidad
 
-| Entidad | Registros |
-| --- | ---: |
-| Productos | 20 |
-| Categorías | 20 |
-| Clientes | 20 |
-| Proveedores | 20 |
-| Ventas | 20 |
-| Compras | 20 |
+Los conteos indicados en la sección de datos de prueba corresponden a la base local usada para revisar la aplicación y obtener las evidencias. No deben interpretarse como una garantía de que una instalación limpia cree automáticamente la misma cantidad de registros.
 
-> Estos conteos corresponden a la base de datos local utilizada para las evidencias. Los registros se crearon en esa base de datos y no se asume que se generen automáticamente al instalar el proyecto desde cero.
-
-## Evidencias
-
-Las capturas se organizan en `docs/evidencias/`. Los nombres de las carpetas respetan mayúsculas y minúsculas para que los enlaces funcionen también en GitHub.
-
-### Clase 8: roles, permisos y eliminación lógica
-
-- [Roles](docs/evidencias/clase8/01-roles.png)
-- [Usuario y rol](docs/evidencias/clase8/02-usuario-y-rol.png)
-- [Permisos en las rutas](docs/evidencias/clase8/03-permisos-rutas.png)
-- [Producto eliminado correctamente](docs/evidencias/clase8/04-producto-eliminado-exito.png)
-- [Registro de eliminación lógica](docs/evidencias/clase8/05-soft-delete-deleted-at.png)
-- [Acceso denegado 403](docs/evidencias/clase8/06-acceso-403.png)
-- [Búsqueda y filtros de productos](docs/evidencias/clase8/07-productos-busqueda-filtros.png)
-- [Menú del almacenista](docs/evidencias/clase8/08-menu-almacenista.png)
-
-### Clase 9: ventas e indicadores
-
-- [Listado de clientes](docs/evidencias/Clase9/01-clientes-index.png)
-- [Formulario de venta y totales](docs/evidencias/Clase9/02-nueva-venta-totales.png)
-- [Venta y stock en MySQL](docs/evidencias/Clase9/03-mysql-venta-stock.png)
-- [Validación de stock insuficiente](docs/evidencias/Clase9/04-error-stock-insuficiente.png)
-- [Dashboard con indicadores](docs/evidencias/Clase9/05-dashboard-kpis-top5.png)
-- [Anulación de venta y devolución de stock](docs/evidencias/Clase9/06-ventas-anulada-stock-devuelto.png)
-
-### Clase 10: órdenes y recepción de compras
-
-- [Stock antes de crear la orden](docs/evidencias/Clase10/01-stock-antes-orden.png)
-- [Orden creada sin aumentar el stock](docs/evidencias/Clase10/02-orden-sin-stock.png)
-- [Stock mientras la orden sigue sin recibir](docs/evidencias/Clase10/03-stock-sin-recibir.png)
-- [Recepción parcial y aumento del stock recibido](docs/evidencias/Clase10/04-recepcion-parcial-stock.png)
-- [Validación al intentar recibir unidades de más](docs/evidencias/Clase10/05-rechazo-sobrerrecepcion.png)
-- [Orden de compra generada en PDF](docs/evidencias/Clase10/06-orden-compra-pdf.png)
-
-## Instalación local
-
-### Requisitos previos
-
-- Git
-- PHP 8.3 o superior
-- Composer
-- Docker Desktop y Docker Compose
-- Node.js y npm, o ejecución de npm mediante Sail
-
-### Descargar e instalar
-
-```bash
-git clone https://github.com/monialeja1011/Software-de-Gestion-Empresarial-2026.git
-cd Software-de-Gestion-Empresarial-2026
-
-cp .env.example .env
-composer install
-
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan key:generate
-./vendor/bin/sail artisan migrate --seed
-
-./vendor/bin/sail npm install
-./vendor/bin/sail npm run build
-```
-
-La aplicación queda disponible en:
-
-```text
-http://localhost
-```
-
-### Iniciar y detener el entorno
-
-```bash
-# Iniciar los contenedores
-./vendor/bin/sail up -d
-
-# Consultar su estado
-./vendor/bin/sail ps
-
-# Detenerlos
-./vendor/bin/sail down
-```
-
-### Comandos útiles
-
-```bash
-# Consultar el estado de las migraciones
-./vendor/bin/sail artisan migrate:status
-
-# Limpiar las cachés de Laravel
-./vendor/bin/sail artisan optimize:clear
-
-# Consultar rutas de ventas
-./vendor/bin/sail artisan route:list --path=sales
-
-# Consultar rutas de compras
-./vendor/bin/sail artisan route:list --path=purchases
-
-# Ejecutar las pruebas automatizadas
-./vendor/bin/sail artisan test
-```
-
-## Dificultades y soluciones
-
-| Dificultad | Solución aplicada |
-| --- | --- |
-| MySQL rechazó conexiones mientras el contenedor todavía iniciaba. | Esperar a que el servicio MySQL aparezca saludable antes de ejecutar migraciones y consultas. |
-| Una venta anulada con eliminación lógica no se encontraba al abrir su detalle. | Permitir la consulta de ventas eliminadas lógicamente para conservar el acceso al historial. |
-| Crear una orden de compra podía confundirse con recibir la mercancía. | Separar la creación de la orden de la recepción; solo la recepción modifica el inventario. |
-| Se debía permitir recibir pedidos en varias entregas. | Registrar cada recepción por separado y acumular las unidades recibidas. |
-| Se debía impedir la recepción de unidades adicionales no solicitadas. | Comparar cada cantidad recibida con las unidades pendientes y rechazar el exceso. |
-| El IVA podía sumarse dos veces cuando el precio de venta ya lo incluía. | Desglosar la base y el impuesto sin volver a sumarlo al precio público. |
-| Un usuario podía intentar acceder directamente a una ruta restringida. | Proteger las rutas en el servidor mediante middleware de permisos y comprobar la respuesta 403. |
-
-## Plan de trabajo para el tercer corte
-
-- Revisar con el profesor el alcance tributario esperado y la posible integración con la DIAN.
-- Probar el recálculo del precio público después de recibir una compra con un costo diferente.
-- Completar y guardar las evidencias reales de la clase 10.
-- Ejecutar y documentar las pruebas automatizadas disponibles.
-- Revisar la adaptación de las pantallas para celular, tableta y computador.
-- Ampliar los reportes de ventas, compras e inventario según los requerimientos del siguiente corte.
-
-## Alcance tributario
-
-El sistema configura la tarifa de IVA por producto. En las ventas, el precio público incluye el impuesto cuando aplica y el comprobante presenta su desglose sin sumarlo nuevamente al total.
-
-Los PDF generados son comprobantes internos de venta y órdenes de compra. No sustituyen una factura electrónica autorizada y el sistema no está integrado con la DIAN.
+La inicialización de roles, permisos y datos debe verificarse con los seeders antes de instalar el proyecto en otra base de datos. No se deben ejecutar seeders de demostración sobre una base con información existente sin revisar primero qué datos crean o modifican.
