@@ -8,9 +8,6 @@
 
 Aplicación web académica para administrar operaciones de una empresa desde una sola plataforma. El sistema reúne catálogo, clientes, proveedores, compras, ventas, métodos de pago y usuarios. Está desarrollado con Laravel y utiliza una base de datos relacional.
 
-> **Importante.**
-> Este README describe el código incluido en este repositorio. La sección de alcance diferencia las funciones implementadas de las mejoras propuestas; no se presentan como terminadas las funcionalidades que todavía no están en el código.
-
 ---
 
 ## Tabla de contenido
@@ -238,7 +235,6 @@ Visita [http://localhost](http://localhost) o el puerto configurado en `APP_PORT
 | `admin@sge.test` | `admin` |
 | `vendedor@sge.test` | `vendedor` |
 
-Son credenciales para desarrollo local. No las uses en un entorno público; cambia las contraseñas y revisa la configuración antes de desplegar.
 
 ## Uso diario y comandos
 
