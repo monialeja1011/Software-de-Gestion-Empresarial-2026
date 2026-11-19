@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
 class Client extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'name',
         'email',
@@ -21,5 +24,12 @@ class Client extends Model
     {
         return $this->hasMany(Sale::class);
     }
-}
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
+}

@@ -20,12 +20,6 @@
                 @endcan
             </div>
 
-            @if (session('success'))
-                <div class="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @php
                 $statusLabels = [
                     'enviada' => 'Enviada al proveedor',

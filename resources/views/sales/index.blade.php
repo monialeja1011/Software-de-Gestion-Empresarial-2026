@@ -60,7 +60,7 @@
                                             <form action="{{ route('sales.destroy', $sale) }}"
                                                   method="POST"
                                                   class="ml-3 inline"
-                                                  onsubmit="return confirm('¿Anular esta venta y devolver el stock?')">
+                                                  data-confirm="¿Anular esta venta y devolver el stock?"">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="text-red-700 underline">Anular</button>

@@ -4,11 +4,16 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\Sale;
+use App\Services\InventoryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SaleService
 {
+    public function __construct(private InventoryService $inventoryService)
+    {
+    }
+
     public function register(array $data, int $userId): Sale
     {
         return DB::transaction(function () use ($data, $userId) {
@@ -107,7 +112,18 @@ class SaleService
                     'iva_amount' => $item['iva_amount'],
                 ]);
 
-                $item['product']->decrement('stock', $item['quantity']);
+                $this->inventoryService->record(
+                    $item['product'],
+                    'salida',
+                    (int) $item['quantity'],
+                    'venta',
+                    $sale,
+                    $userId,
+                    $item['product']->cost_price !== null
+                        ? (float) $item['product']->cost_price
+                        : null,
+                    "Salida por venta {$sale->invoice_number}"
+                );
             }
 
             return $sale;

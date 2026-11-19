@@ -33,14 +33,29 @@
 
     <label class="mb-3 block">
         Stock:
-        <input
-            type="number"
-            min="0"
-            name="stock"
-            value="{{ old('stock', $product->stock ?? 0) }}"
-            class="w-full rounded border p-2"
-            required
-        >
+        @if (isset($product))
+            <input
+                type="number"
+                value="{{ $product->stock }}"
+                class="w-full rounded border bg-gray-100 p-2"
+                readonly
+            >
+            <span class="text-sm text-gray-600">
+                El stock se administra desde el módulo Kardex.
+            </span>
+        @else
+            <input
+                type="number"
+                min="0"
+                name="stock"
+                value="{{ old('stock', 0) }}"
+                class="w-full rounded border p-2"
+                required
+            >
+            <span class="text-sm text-gray-600">
+                Este saldo inicial se registrará en el Kardex.
+            </span>
+        @endif
     </label>
 </div>
 

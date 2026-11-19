@@ -24,7 +24,7 @@
                             <td class="p-3">{{ $item->active ? 'Activo' : 'Inactivo' }}</td>
                             <td class="p-3">
                                 <a href="{{ route('providers.edit', $item) }}" class="text-blue-600">Editar</a>
-                                <form action="{{ route('providers.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este proveedor?')">
+                                <form action="{{ route('providers.destroy', $item) }}" method="POST" class="inline" data-confirm="¿Eliminar este proveedor?"">
                                     @csrf @method('DELETE')
                                     <button class="text-red-600 ms-3">Eliminar</button>
                                 </form>

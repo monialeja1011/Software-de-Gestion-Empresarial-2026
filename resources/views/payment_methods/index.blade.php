@@ -28,7 +28,7 @@
                                 </form>
                             </td>
                             <td class="p-3">
-                                <form action="{{ route('payment-methods.destroy', $m) }}" method="POST" onsubmit="return confirm('¿Eliminar este medio de pago?')">
+                                <form action="{{ route('payment-methods.destroy', $m) }}" method="POST" data-confirm="¿Eliminar este medio de pago?"">
                                     @csrf @method('DELETE')
                                     <button class="text-red-600">Eliminar</button>
                                 </form>

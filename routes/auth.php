@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActiveRoleController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -36,6 +37,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('active-role', [ActiveRoleController::class, 'edit'])->name('active-role.select');
+    Route::post('active-role', [ActiveRoleController::class, 'store'])->name('active-role.store');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

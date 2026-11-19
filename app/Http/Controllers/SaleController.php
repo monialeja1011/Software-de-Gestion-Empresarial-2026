@@ -8,6 +8,7 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Services\SaleService;
+use App\Services\InventoryService;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -70,9 +71,9 @@ class SaleController extends Controller
     }
 
     /** Anula la venta y devuelve el stock, sin borrar su registro. */
-    public function destroy(Sale $sale)
+    public function destroy(Sale $sale, InventoryService $inventoryService)
     {
-        $anulada = DB::transaction(function () use ($sale) {
+        $anulada = DB::transaction(function () use ($sale, $inventoryService) {
             // Vuelve a leer y bloquea la venta para evitar anularla dos veces.
             $ventaBloqueada = Sale::query()
                 ->lockForUpdate()
@@ -90,7 +91,18 @@ class SaleController extends Controller
                     ->find($detail->product_id);
 
                 if ($product) {
-                    $product->increment('stock', $detail->quantity);
+                    $inventoryService->record(
+                        $product,
+                        'entrada',
+                        (int) $detail->quantity,
+                        'anulacion_venta',
+                        $ventaBloqueada,
+                        auth()->id(),
+                        $product->cost_price !== null
+                            ? (float) $product->cost_price
+                            : null,
+                        "Devolución de stock por anulación de {$ventaBloqueada->invoice_number}"
+                    );
                 }
             }
 

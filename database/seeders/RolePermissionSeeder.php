@@ -60,6 +60,10 @@ class RolePermissionSeeder extends Seeder
             'editar-metodos-pago',
             'eliminar-metodos-pago',
 
+            'ver-inventario',
+            'ajustar-inventario',
+            'ver-auditoria',
+
             'gestionar-usuarios',
             'gestionar-roles',
             'gestionar-permisos',
@@ -102,6 +106,8 @@ class RolePermissionSeeder extends Seeder
             'ver-compras',
             'crear-compras',
             'recibir-compras',
+            'ver-inventario',
+            'ajustar-inventario',
         ]);
 
         $superadmin->syncPermissions(Permission::all());

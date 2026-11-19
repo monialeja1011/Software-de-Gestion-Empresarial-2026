@@ -1,76 +1,133 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="max-w-4xl mx-auto px-4">
-            <h1 class="text-2xl font-bold mb-6">Usuarios y roles</h1>
+    <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <header>
+            <p class="text-sm font-semibold uppercase tracking-widest text-pink-600">Configuración</p>
+            <h1 class="mt-1 text-2xl font-bold text-slate-900">Roles y permisos</h1>
+            <p class="mt-1 text-sm text-slate-600">Configura el acceso por módulo y revisa permisos individuales.</p>
+        </header>
 
-            @if (session('success'))
-                <div class="mb-4 rounded bg-green-100 p-3 text-green-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="mb-4 rounded bg-red-100 p-3 text-red-800">
-                    <ul class="list-disc pl-5">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <table class="w-full rounded bg-white shadow">
-                <thead>
-                    <tr class="border-b">
-                        <th class="p-3 text-left">Nombre</th>
-                        <th class="p-3 text-left">Email</th>
-                        <th class="p-3 text-left">Rol actual</th>
-                        <th class="p-3 text-left">Cambiar rol</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach ($users as $u)
-                        @php($currentRole = $u->getRoleNames()->first())
-
-                        <tr class="border-b">
-                            <td class="p-3">{{ $u->name }}</td>
-                            <td class="p-3">{{ $u->email }}</td>
-                            <td class="p-3">{{ $u->getRoleNames()->join(', ') }}</td>
-                            <td class="p-3">
-                                @can('gestionar-roles')
-                                    <form
-                                        action="{{ route('users.update', $u) }}"
-                                        method="POST"
-                                        class="flex items-center gap-2"
-                                    >
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <select name="role" class="rounded border p-1">
-                                            <option value="admin" @selected($currentRole === 'admin')>
-                                                Administrador
-                                            </option>
-                                            <option value="vendedor" @selected($currentRole === 'vendedor')>
-                                                Vendedor
-                                            </option>
-                                            <option value="superadmin" @selected($currentRole === 'superadmin')>
-                                                Superadmin
-                                            </option>
-                                        </select>
-
-                                        <button type="submit" class="text-blue-600">
-                                            Guardar
-                                        </button>
-                                    </form>
-                                @else
-                                    <span>Sin permiso para cambiar roles</span>
-                                @endcan
-                            </td>
-                        </tr>
+        @if ($errors->any())
+            <div class="rounded-xl bg-rose-100 p-4 text-rose-800">
+                <ul class="list-inside list-disc">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+                </ul>
+            </div>
+        @endif
+
+        <form method="GET" action="{{ route('users.index') }}"
+              class="grid gap-4 rounded-2xl bg-white p-5 shadow-lg shadow-pink-100 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
+            <label class="text-sm font-medium text-slate-700">
+                Módulo
+                <select name="module" class="mt-1 w-full rounded-lg border-pink-200 focus:border-pink-500 focus:ring-pink-300">
+                    <option value="todos" @selected($moduleFilter === 'todos')>Todos los módulos</option>
+                    @foreach ($moduleLabels as $key => $label)
+                        <option value="{{ $key }}" @selected($moduleFilter === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="text-sm font-medium text-slate-700">
+                Ver como usuario
+                <select name="user_id" class="mt-1 w-full rounded-lg border-pink-200 focus:border-pink-500 focus:ring-pink-300">
+                    <option value="" @selected($selectedUser === null)>— Ninguno —</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}" @selected($selectedUser?->id === $user->id)>
+                            {{ $user->name }} — {{ $user->email }}
+                        </option>
+                    @endforeach
+                </select>
+            </label>
+
+            <button class="self-end rounded-lg bg-pink-600 px-6 py-2.5 font-semibold text-white shadow-md shadow-pink-200 transition hover:bg-pink-700">
+                Aplicar
+            </button>
+        </form>
+
+        <form method="POST" action="{{ route('users.permissions.update') }}"
+              class="overflow-hidden rounded-2xl bg-white shadow-lg shadow-pink-100">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="user_id" value="{{ $selectedUser?->id }}">
+            <input type="hidden" name="module" value="{{ $moduleFilter }}">
+
+            <div class="flex flex-col gap-2 border-b border-pink-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="font-semibold text-slate-900">Matriz de acceso</h2>
+                    <p class="text-sm text-slate-600">
+                        Los cambios se aplican al guardar. Usuario seleccionado:
+                        <span class="font-medium text-pink-700">{{ $selectedUser?->name ?? 'Ninguno' }}</span>
+                    </p>
+                </div>
+                <button class="rounded-lg bg-pink-600 px-5 py-2.5 font-semibold text-white shadow-md shadow-pink-200 transition hover:-translate-y-0.5 hover:bg-pink-700">
+                    Guardar permisos
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[850px] text-left text-sm">
+                    <thead class="bg-pink-50 text-slate-700">
+                        <tr>
+                            <th class="px-4 py-3 font-semibold">Permiso</th>
+                            <th class="px-4 py-3 font-semibold">Acción</th>
+                            @foreach ($roles as $role)
+                                <th class="px-4 py-3 text-center font-semibold">{{ ucfirst($role->name) }}</th>
+                            @endforeach
+                            <th class="px-4 py-3 text-center font-semibold">
+                                Permiso directo<br>
+                                <span class="font-normal">{{ $selectedUser?->name }}</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($permissionGroups as $module => $group)
+                            @if ($group->isNotEmpty())
+                                <tr class="bg-slate-100">
+                                    <th colspan="{{ 3 + $roles->count() }}" class="px-4 py-2 font-semibold text-pink-800">
+                                        {{ $moduleLabels[$module] }}
+                                    </th>
+                                </tr>
+                                @foreach ($group as $permission)
+                                    @php
+                                        $prefix = \Illuminate\Support\Str::before($permission->name, '-');
+                                        $action = $actions[$prefix] ?? ucfirst($prefix);
+                                        $moduleHidden = $moduleFilter !== 'todos' && $moduleFilter !== $module;
+                                    @endphp
+                                    <tr class="{{ $moduleHidden ? 'hidden' : '' }} border-t border-slate-100 hover:bg-pink-50/70">
+                                        <td class="px-4 py-2.5 font-medium text-slate-800">{{ $permission->name }}</td>
+                                        <td class="px-4 py-2.5 text-slate-600">{{ $action }}</td>
+                                        @foreach ($roles as $role)
+                                            <td class="px-4 py-2.5 text-center">
+                                                <input type="checkbox"
+                                                       name="role_permissions[{{ $role->id }}][]"
+                                                       value="{{ $permission->id }}"
+                                                       @checked($role->permissions->contains('id', $permission->id))
+                                                       class="rounded border-pink-300 text-pink-600 focus:ring-pink-500">
+                                            </td>
+                                        @endforeach
+                                        <td class="px-4 py-2.5 text-center">
+                                            @if ($selectedUser)
+                                                <input type="checkbox"
+                                                       name="direct_permissions[]"
+                                                       value="{{ $permission->id }}"
+                                                       @checked($selectedUser->permissions->contains('id', $permission->id))
+                                                       class="rounded border-pink-300 text-pink-600 focus:ring-pink-500">
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end border-t border-pink-100 p-5">
+                <button class="rounded-lg bg-pink-600 px-5 py-2.5 font-semibold text-white shadow-md shadow-pink-200 transition hover:-translate-y-0.5 hover:bg-pink-700">
+                    Guardar permisos
+                </button>
+            </div>
+        </form>
     </div>
 </x-app-layout>

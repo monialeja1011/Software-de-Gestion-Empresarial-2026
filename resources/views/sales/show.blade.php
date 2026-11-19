@@ -25,12 +25,6 @@
                 </div>
             </header>
 
-            @if (session('success'))
-                <div class="rounded-2xl bg-green-50 p-4 text-green-800 shadow-sm">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @if ($errors->any())
                 <div class="rounded-2xl bg-rose-50 p-4 text-sm text-rose-800 shadow-sm">
                     <ul class="list-inside list-disc">
@@ -240,7 +234,7 @@
                 <form
                     action="{{ route('sales.destroy', $sale) }}"
                     method="POST"
-                    onsubmit="return confirm('¿Anular esta venta? El stock será devuelto.')"
+                    data-confirm="¿Anular esta venta? El stock será devuelto.""
                 >
                     @csrf
                     @method('DELETE')

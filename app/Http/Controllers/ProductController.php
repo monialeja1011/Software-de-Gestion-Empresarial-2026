@@ -6,7 +6,9 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -82,12 +84,27 @@ class ProductController extends Controller
         return view('products.create', compact('categories'));
     }
 
-    public function store(StoreProductRequest $request)
+    public function store(StoreProductRequest $request, InventoryService $inventory)
     {
         $data = $request->validated();
         $data['active'] = $request->boolean('active');
 
-        Product::create($data);
+        DB::transaction(function () use ($data, $request, $inventory) {
+            $product = Product::create($data);
+
+            if ((int) $product->stock > 0) {
+                $inventory->record(
+                    $product,
+                    'entrada',
+                    (int) $product->stock,
+                    'saldo_inicial',
+                    null,
+                    $request->user()->id,
+                    $product->cost_price !== null ? (float) $product->cost_price : null,
+                    'Stock inicial al crear el producto.'
+                );
+            }
+        });
 
         return redirect()->route('products.index')
             ->with('success', 'Producto creado.');

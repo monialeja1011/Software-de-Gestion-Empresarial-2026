@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use LogsActivity;
     use SoftDeletes;
 
     protected $attributes = [
@@ -47,5 +50,14 @@ class Product extends Model
     public function purchaseDetails()
     {
         return $this->hasMany(PurchaseDetail::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logExcept(['stock'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 }

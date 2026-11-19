@@ -3,6 +3,8 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -216,9 +218,34 @@ Route::get('users', [UserController::class, 'index'])
     ->middleware('permission:gestionar-usuarios')
     ->name('users.index');
 
+Route::patch('users/permissions', [UserController::class, 'updatePermissions'])
+    ->middleware(['role:superadmin', 'permission:gestionar-permisos'])
+    ->name('users.permissions.update');
+
 Route::patch('users/{user}', [UserController::class, 'update'])
-    ->middleware('permission:gestionar-roles')
+    ->middleware(['role:superadmin', 'permission:gestionar-roles'])
     ->name('users.update');
+
+    // Kardex y auditoría
+    Route::get('inventory', [InventoryController::class, 'index'])
+        ->middleware('permission:ver-inventario')
+        ->name('inventory.index');
+
+    Route::post('inventory/{product}/adjust', [InventoryController::class, 'adjust'])
+        ->middleware('permission:ajustar-inventario')
+        ->name('inventory.adjust');
+
+    Route::get('inventory/{product}/adjust', [InventoryController::class, 'editAdjustment'])
+        ->middleware('permission:ajustar-inventario')
+        ->name('inventory.adjust.form');
+
+    Route::post('inventory/{product}/adjust/store', [InventoryController::class, 'adjust'])
+        ->middleware('permission:ajustar-inventario')
+        ->name('inventory.adjust.store');
+
+    Route::get('audit', [AuditController::class, 'index'])
+        ->middleware('permission:ver-auditoria')
+        ->name('audit.index');
 
     // Superadmin y administrador
     Route::middleware('role:superadmin|admin')->group(function () {

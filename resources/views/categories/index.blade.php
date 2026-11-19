@@ -30,12 +30,6 @@
                 </div>
             </div>
 
-            @if (session('success'))
-                <div class="mb-4 rounded bg-green-100 p-3 text-green-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @if ($errors->any())
                 <div class="mb-4 rounded bg-red-100 p-3 text-red-800">
                     {{ $errors->first() }}
@@ -127,7 +121,7 @@
                                             <form action="{{ route('categories.destroy', $category) }}"
                                                   method="POST"
                                                   class="inline"
-                                                  onsubmit="return confirm('¿Enviar esta categoría a la papelera?')">
+                                                  data-confirm="¿Enviar esta categoría a la papelera?"">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="ms-3 text-red-700 underline">

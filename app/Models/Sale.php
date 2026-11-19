@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sale extends Model
 {
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = [
@@ -56,5 +59,13 @@ class Sale extends Model
         return $this->belongsToMany(Product::class, 'sale_details')
             ->withPivot('quantity', 'price', 'subtotal')
             ->withTimestamps();
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 }

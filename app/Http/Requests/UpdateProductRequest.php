@@ -18,7 +18,6 @@ class UpdateProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
             'iva_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'category_id' => [
                 'required',
