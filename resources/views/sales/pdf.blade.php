@@ -15,13 +15,13 @@
 
         h1 {
             margin: 0;
-            color: #be185d;
+            color: {{ $branding->accentHex() }};
             font-size: 21px;
         }
 
         h2 {
             margin: 18px 0 8px;
-            color: #9d174d;
+            color: {{ $branding->accentHex() }};
             font-size: 14px;
         }
 
@@ -30,7 +30,7 @@
         .box {
             margin: 14px 0;
             padding: 12px;
-            border: 1px solid #fbcfe8;
+            border: 1px solid rgb({{ $branding->palette()[200] }});
         }
 
         .details {
@@ -52,8 +52,8 @@
         }
 
         .items th {
-            background: #fce7f3;
-            color: #831843;
+            background: rgb({{ $branding->palette()[100] }});
+            color: {{ $branding->accentHex() }};
             text-align: left;
         }
 
@@ -75,8 +75,8 @@
         .totals td { padding: 5px; }
 
         .total {
-            border-top: 1px solid #db2777;
-            color: #9d174d;
+            border-top: 1px solid {{ $branding->accentHex() }};
+            color: {{ $branding->accentHex() }};
             font-size: 14px;
             font-weight: bold;
         }
@@ -84,7 +84,7 @@
         .notice {
             margin-top: 20px;
             padding: 10px;
-            background: #fff1f2;
+            background: rgb({{ $branding->palette()[50] }});
         }
 
         .cancelled {
@@ -95,6 +95,7 @@
     </style>
 </head>
 <body>
+@include('pdf.company-header')
     <h1>COMPROBANTE INTERNO DE VENTA</h1>
     <p class="muted">{{ $sale->invoice_number ?? 'Venta '.$sale->id }}</p>
 

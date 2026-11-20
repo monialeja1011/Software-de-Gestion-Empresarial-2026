@@ -91,7 +91,7 @@
                 }
             }"
         >
-            <h1 class="mb-6 text-2xl font-bold text-rose-950">Nueva venta</h1>
+            <h1 class="mb-6 text-2xl font-bold text-pink-900">Nueva venta</h1>
 
             @if ($errors->any())
                 <div class="mb-4 rounded-2xl bg-rose-100 p-4 text-rose-900 shadow">
@@ -169,7 +169,7 @@
                                         <select
                                             :name="`items[${i}][product_id]`"
                                             x-model="row.product_id"
-                                            class="w-full rounded-lg border-0 bg-rose-50 p-2 shadow-sm"
+                                            class="w-full rounded-lg border-0 bg-pink-50 p-2 shadow-sm"
                                             required
                                         >
                                             <option value="">Seleccione...</option>
@@ -191,7 +191,7 @@
                                             :max="stock(row)"
                                             :name="`items[${i}][quantity]`"
                                             x-model.number="row.quantity"
-                                            class="w-24 rounded-lg border-0 bg-rose-50 p-2 shadow-sm"
+                                            class="w-24 rounded-lg border-0 bg-pink-50 p-2 shadow-sm"
                                             required
                                         >
                                     </td>
@@ -207,7 +207,7 @@
                                         <button
                                             type="button"
                                             @click="remove(i)"
-                                            class="font-semibold text-rose-700 hover:text-rose-900"
+                                            class="font-semibold text-pink-700 hover:text-pink-900"
                                         >
                                             Quitar
                                         </button>
@@ -221,7 +221,7 @@
                 <button
                     type="button"
                     @click="add()"
-                    class="mt-4 font-semibold text-rose-700 hover:text-rose-900"
+                    class="mt-4 font-semibold text-pink-700 hover:text-pink-900"
                 >
                     + Agregar producto
                 </button>
@@ -236,7 +236,7 @@
                             <span>IVA incluido:</span>
                             <span x-text="fmt(tax)"></span>
                         </div>
-                        <div class="flex justify-between border-t border-rose-100 pt-3 text-xl font-bold text-rose-950">
+                        <div class="flex justify-between border-t border-pink-100 pt-3 text-xl font-bold text-pink-900">
                             <span>Total a pagar:</span>
                             <span x-text="fmt(total)"></span>
                         </div>
@@ -254,10 +254,10 @@
                 </label>
 
                 <div class="mt-6">
-                    <button class="rounded-xl bg-rose-600 px-5 py-3 font-bold text-white shadow transition hover:bg-rose-700">
+                    <button class="rounded-xl bg-pink-600 px-5 py-3 font-bold text-white shadow transition hover:bg-pink-700">
                         Registrar venta
                     </button>
-                    <a href="{{ route('sales.index') }}" class="ml-3 font-medium text-rose-700">
+                    <a href="{{ route('sales.index') }}" class="ml-3 font-medium text-pink-700">
                         Cancelar
                     </a>
                 </div>

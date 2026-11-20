@@ -61,7 +61,7 @@
                         @foreach ($element as $page => $url)
                             @if ($page == $paginator->currentPage())
                                 <span aria-current="page"
-                                      class="flex h-9 min-w-9 items-center justify-center rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-3 text-sm font-semibold text-white shadow-sm">
+                                      class="flex h-9 min-w-9 items-center justify-center rounded-lg bg-gradient-to-br from-pink-700 to-pink-600 px-3 text-sm font-semibold text-white shadow-sm">
                                     {{ $page }}
                                 </span>
                             @else

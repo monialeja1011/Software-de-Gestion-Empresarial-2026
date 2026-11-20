@@ -10,8 +10,8 @@
         $maxSold = max(1, (int) ($topProducts->max('quantity_sold') ?? 1));
     @endphp
 
-    <div class="min-h-screen bg-[#fdf5f9] pb-14">
-        <section class="bg-gradient-to-br from-pink-900 via-pink-700 to-fuchsia-600 pb-24 pt-10 text-white">
+    <div class="min-h-screen bg-pink-50 pb-14">
+        <section class="bg-gradient-to-br from-pink-900 via-pink-700 to-pink-600 pb-24 pt-10 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <p class="text-sm text-pink-100/80">
                     {{ now()->translatedFormat('l, j \d\e F \d\e Y') }}
@@ -154,7 +154,7 @@
                                     <span class="font-semibold text-pink-800 tabular-nums">{{ $product->quantity_sold }} unidades</span>
                                 </div>
                                 <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-pink-100">
-                                    <div class="h-full rounded-full bg-gradient-to-r from-pink-700 to-fuchsia-500"
+                                    <div class="h-full rounded-full bg-gradient-to-r from-pink-700 to-pink-500"
                                          style="width: {{ round(($product->quantity_sold / $maxSold) * 100) }}%"></div>
                                 </div>
                             </li>

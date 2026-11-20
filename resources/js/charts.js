@@ -1,13 +1,27 @@
 import Chart from 'chart.js/auto';
 
-const palette = [
-    '#db2777',
-    '#f472b6',
-    '#be185d',
-    '#fb7185',
-    '#f9a8d4',
-    '#9d174d',
-];
+const fallback = {
+    100: '#fce7f3',
+    300: '#f9a8d4',
+    400: '#f472b6',
+    500: '#ec4899',
+    600: '#db2777',
+    700: '#be185d',
+    800: '#9d174d',
+};
+
+function brand(shade) {
+    const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--brand-${shade}`)
+        .trim();
+    const channels = raw.split(/\s+/).map(Number);
+
+    if (channels.length !== 3 || channels.some(Number.isNaN)) {
+        return fallback[shade];
+    }
+
+    return '#' + channels.map((value) => value.toString(16).padStart(2, '0')).join('');
+}
 
 const currency = new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -16,6 +30,9 @@ const currency = new Intl.NumberFormat('es-CO', {
 });
 
 export function renderCharts() {
+    const palette = [600, 300, 800, 400, 700, 500].map(brand);
+    const gridColor = brand(100);
+
     document.querySelectorAll('[data-chart]').forEach((canvas) => {
         const chart = JSON.parse(canvas.dataset.chart);
         const datasets = chart.datasets.map((dataset, index) => {
@@ -64,7 +81,7 @@ export function renderCharts() {
                 scales: chart.type === 'doughnut' ? {} : {
                     x: {
                         beginAtZero: true,
-                        grid: { color: '#fce7f3' },
+                        grid: { color: gridColor },
                         ticks: {
                             callback: (value) => chart.money
                                 ? currency.format(value)
@@ -73,7 +90,7 @@ export function renderCharts() {
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#fce7f3' },
+                        grid: { color: gridColor },
                         ticks: {
                             callback: (value) => chart.money
                                 ? currency.format(value)

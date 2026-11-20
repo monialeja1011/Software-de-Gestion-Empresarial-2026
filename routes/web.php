@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -242,6 +243,14 @@ Route::patch('users/{user}', [UserController::class, 'update'])
     Route::post('inventory/{product}/adjust/store', [InventoryController::class, 'adjust'])
         ->middleware('permission:ajustar-inventario')
         ->name('inventory.adjust.store');
+
+    Route::get('company-settings', [CompanySettingController::class, 'edit'])
+        ->middleware('permission:ver-identidad')
+        ->name('company-settings.edit');
+
+    Route::match(['put', 'patch'], 'company-settings', [CompanySettingController::class, 'update'])
+        ->middleware('permission:editar-identidad')
+        ->name('company-settings.update');
 
     Route::get('audit', [AuditController::class, 'index'])
         ->middleware('permission:ver-auditoria')

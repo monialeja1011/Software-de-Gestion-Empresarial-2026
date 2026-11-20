@@ -57,9 +57,31 @@ class CompanySetting extends Model
         return $this->logo_path ? asset('storage/'.$this->logo_path) : null;
     }
 
+    public function faviconUrl(): string
+    {
+        $logo = $this->logoUrl();
+
+        if (! $logo) {
+            return asset('favicon.svg');
+        }
+
+        return $logo.'?v='.($this->updated_at?->timestamp ?? 0);
+    }
+
     public function initials(): string
     {
-        return mb_strtoupper(mb_substr(trim((string) $this->trade_name) ?: 'SGE', 0, 2));
+        $words = preg_split('/\s+/u', trim((string) $this->trade_name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $significant = array_values(array_filter($words, fn ($word) => mb_strlen($word) > 2));
+        $words = $significant ?: $words;
+
+        if (count($words) >= 2) {
+            return mb_strtoupper(implode('', array_map(
+                fn ($word) => mb_substr($word, 0, 1),
+                array_slice($words, 0, 3)
+            )));
+        }
+
+        return mb_strtoupper(mb_substr($words[0] ?? 'SGE', 0, 2));
     }
 
     public function palette(): array

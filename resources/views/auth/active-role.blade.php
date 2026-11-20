@@ -10,7 +10,7 @@
         $fieldClass = 'mt-1 rounded-lg border-pink-100 bg-white text-sm text-slate-700 shadow-sm focus:border-pink-400 focus:ring-pink-200';
     @endphp
 
-    <div class="min-h-screen bg-[#fdf5f9] py-8">
+    <div class="min-h-screen bg-pink-50 py-8">
         <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
             <form id="adjust-form" method="POST" action="{{ route('inventory.adjust.store', $product) }}"
                   class="rounded-2xl border border-pink-100 bg-white">
@@ -53,7 +53,7 @@
 
                 <div class="flex items-center gap-5 border-t border-pink-100 px-6 py-4">
                     <button type="submit"
-                            class="rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
+                            class="rounded-lg bg-gradient-to-br from-pink-700 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
                         Registrar ajuste
                     </button>
                     <a href="{{ route('inventory.kardex', ['product' => $product->id, 'product_id' => $product->id]) }}"

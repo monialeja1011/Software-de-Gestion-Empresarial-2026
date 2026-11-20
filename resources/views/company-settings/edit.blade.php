@@ -14,7 +14,6 @@
 
         $fieldClass = 'mt-1 block w-full rounded-lg border-pink-100 bg-white text-sm text-slate-700 shadow-sm focus:border-pink-400 focus:ring-pink-200 disabled:bg-pink-50/50 disabled:text-slate-500';
 
-        // [campo, etiqueta, tipo, ejemplo, obligatorio, columnas]
         $sections = [
             'Datos de la empresa' => [
                 ['trade_name', 'Nombre comercial', 'text', 'Nombre con el que te conocen tus clientes', true, 'sm:col-span-2'],
@@ -40,7 +39,13 @@
                   logo: @js($setting->logoUrl()),
                   removeLogo: {{ old('remove_logo') ? 'true' : 'false' }},
                   get color() { return /^#[0-9a-fA-F]{6}$/.test(this.f.brand_color) ? this.f.brand_color : '#db2777' },
-                  get initials() { return (this.f.trade_name || '?').trim().slice(0, 2).toUpperCase() },
+                  get initials() {
+                      const all = (this.f.trade_name || '').trim().split(/\s+/).filter(Boolean);
+                      const long = all.filter(w => w.length > 2);
+                      const words = long.length ? long : all;
+                      if (words.length >= 2) return words.slice(0, 3).map(w => w[0]).join('').toUpperCase();
+                      return (words[0] || '?').slice(0, 2).toUpperCase();
+                  },
                   pick(event) {
                       const file = event.target.files[0];
                       if (file) { this.logo = URL.createObjectURL(file); this.removeLogo = false; }
@@ -50,7 +55,6 @@
             @method('PATCH')
 
             <div class="space-y-6 lg:col-span-3">
-
                 @if (session('status'))
                     <div class="rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-800" role="status">
                         {{ session('status') }}
@@ -64,7 +68,6 @@
                 @endunless
 
                 <fieldset @disabled(! $canEdit) class="min-w-0 space-y-6">
-
                     @foreach ($sections as $title => $fields)
                         <section class="rounded-2xl border border-pink-100 bg-white">
                             <header class="border-b border-pink-100 px-6 py-4">
@@ -147,7 +150,6 @@
                 @endif
             </div>
 
-            
             <aside class="lg:col-span-2">
                 <div class="space-y-4 lg:sticky lg:top-6">
                     <div class="overflow-hidden rounded-2xl border border-pink-100 bg-white">

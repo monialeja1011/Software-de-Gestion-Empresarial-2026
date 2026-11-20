@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
+
+use App\Models\CompanySetting;
+
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        View::composer('*', function ($view) {
+            $view->with('branding', CompanySetting::current());
+        });
         Gate::after(function ($user, $ability, $result, $arguments) {
             if (! $user instanceof User || ! is_string($ability)) {
                 return null;

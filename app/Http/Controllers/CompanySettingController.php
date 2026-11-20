@@ -31,7 +31,25 @@ class CompanySettingController extends Controller
             $data['logo_path'] = null;
         }
 
-        $setting->fill($data)->save();
+        $setting->fill($data);
+
+        $after = $setting->getDirty();
+        $before = collect($after)
+            ->mapWithKeys(fn ($value, $key) => [$key => $setting->getOriginal($key)])
+            ->all();
+
+        $setting->save();
+
+        if ($after !== []) {
+            activity()
+                ->causedBy($request->user())
+                ->performedOn($setting)
+                ->withProperties([
+                    'antes' => $before,
+                    'despues' => $after,
+                ])
+                ->log('Identidad corporativa actualizada');
+        }
 
         return redirect()
             ->route('company-settings.edit')

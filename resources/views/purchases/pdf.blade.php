@@ -18,11 +18,11 @@
 
         .header {
             padding-bottom: 16px;
-            border-bottom: 2px solid #db2777;
+            border-bottom: 2px solid {{ $branding->accentHex() }};
         }
 
         .brand {
-            color: #be185d;
+            color: {{ $branding->accentHex() }};
             font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
@@ -43,7 +43,7 @@
         .panel {
             margin-top: 16px;
             padding: 12px;
-            border: 1px solid #f3d2e2;
+            border: 1px solid rgb({{ $branding->palette()[200] }});
             border-radius: 8px;
         }
 
@@ -71,7 +71,7 @@
 
         h2 {
             margin: 20px 0 8px;
-            color: #831843;
+            color: {{ $branding->accentHex() }};
             font-size: 14px;
         }
 
@@ -83,14 +83,14 @@
 
         .items th {
             padding: 8px 5px;
-            background: #fce7f3;
-            color: #831843;
+            background: rgb({{ $branding->palette()[100] }});
+            color: {{ $branding->accentHex() }};
             text-align: left;
         }
 
         .items td {
             padding: 7px 5px;
-            border-bottom: 1px solid #f3d2e2;
+            border-bottom: 1px solid rgb({{ $branding->palette()[200] }});
         }
 
         .right { text-align: right !important; }
@@ -107,8 +107,8 @@
         }
 
         .grand-total {
-            border-top: 1px solid #db2777;
-            color: #831843;
+            border-top: 1px solid {{ $branding->accentHex() }};
+            color: {{ $branding->accentHex() }};
             font-size: 13px;
             font-weight: bold;
         }
@@ -116,8 +116,8 @@
         .note {
             margin-top: 20px;
             padding: 10px;
-            background: #fdf2f8;
-            color: #831843;
+            background: rgb({{ $branding->palette()[50] }});
+            color: {{ $branding->accentHex() }};
             font-size: 9px;
         }
 
@@ -128,6 +128,7 @@
     </style>
 </head>
 <body>
+@include('pdf.company-header')
     <header class="header">
         <p class="brand">Sistema de Gestión Empresarial</p>
         <h1 class="title">
