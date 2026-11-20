@@ -56,7 +56,7 @@
                             class="rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
                         Registrar ajuste
                     </button>
-                    <a href="{{ route('inventory.kardex', ['product' => $product->id, 'product_id' => $product->id]) }}"
+                    <a href="{{ route('inventory.index', ['product_id' => $product->id]) }}"
                        class="text-sm text-slate-500 underline-offset-2 hover:text-pink-800 hover:underline">
                         Cancelar
                     </a>
