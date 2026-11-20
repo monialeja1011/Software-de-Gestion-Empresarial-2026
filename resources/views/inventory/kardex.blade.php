@@ -81,6 +81,10 @@
                                    target="_blank"
                                    class="font-medium text-pink-800 underline-offset-2 hover:underline">Descargar PDF</a>
                             @endif
+                            @can('ajustar-inventario')
+                                <a href="{{ route('inventory.adjust.form', $selected) }}"
+                                   class="font-medium text-pink-800 underline-offset-2 hover:underline">Ajustar inventario</a>
+                            @endcan
                         </div>
                     </div>
 
@@ -214,17 +218,17 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label for="adjust-stock" class="text-sm font-medium text-slate-600">Nuevo saldo</label>
-                                <input id="adjust-stock" type="number" name="stock" min="0" value="{{ old('stock') }}" class="{{ $fieldClass }}" required>
-                                @error('stock') <p class="mt-1 text-xs text-rose-700">{{ $message }}</p> @enderror
+                                <label for="adjust-stock" class="text-sm font-medium text-slate-600">Cantidad contada</label>
+                                <input id="adjust-stock" type="number" name="counted_stock" min="0" step="1" value="{{ old('counted_stock') }}" class="{{ $fieldClass }}" required>
+                                @error('counted_stock') <p class="mt-1 text-xs text-rose-700">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="md:col-span-4">
                                 <label for="adjust-notes" class="text-sm font-medium text-slate-600">Motivo (obligatorio)</label>
-                                <input id="adjust-notes" type="text" name="notes" minlength="5" maxlength="1000"
-                                       value="{{ old('notes') }}" placeholder="Describe la razón del ajuste"
+                                <input id="adjust-notes" type="text" name="reason" minlength="5" maxlength="1000"
+                                       value="{{ old('reason') }}" placeholder="Describe la razón del ajuste"
                                        class="{{ $fieldClass }}" required>
-                                @error('notes') <p class="mt-1 text-xs text-rose-700">{{ $message }}</p> @enderror
+                                @error('reason') <p class="mt-1 text-xs text-rose-700">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="md:col-span-2">

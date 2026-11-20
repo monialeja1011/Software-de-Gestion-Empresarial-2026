@@ -63,6 +63,8 @@ class RolePermissionSeeder extends Seeder
             'ver-inventario',
             'ajustar-inventario',
             'ver-auditoria',
+            'ver-identidad',
+            'editar-identidad',
 
             'gestionar-usuarios',
             'gestionar-roles',

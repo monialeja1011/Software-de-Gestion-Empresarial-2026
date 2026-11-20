@@ -38,7 +38,16 @@
                   f: @js($values),
                   logo: @js($setting->logoUrl()),
                   removeLogo: {{ old('remove_logo') ? 'true' : 'false' }},
-                  get color() { return /^#[0-9a-fA-F]{6}$/.test(this.f.brand_color) ? this.f.brand_color : '#db2777' },
+                  get color() {
+                      const raw = /^#[0-9a-fA-F]{6}$/.test(this.f.brand_color) ? this.f.brand_color : '#db2777';
+                      let [r, g, b] = [1, 3, 5].map(i => parseInt(raw.slice(i, i + 2), 16));
+                      const lin = v => { v = v / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+                      const contrast = () => 1.05 / (0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) + 0.05);
+                      for (let i = 0; i < 20 && contrast() < 4.5; i++) {
+                          r = Math.round(r * 0.94); g = Math.round(g * 0.94); b = Math.round(b * 0.94);
+                      }
+                      return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+                  },
                   get initials() {
                       const all = (this.f.trade_name || '').trim().split(/\s+/).filter(Boolean);
                       const long = all.filter(w => w.length > 2);
