@@ -149,3 +149,6 @@ a.bg-gray-800:focus-visible {
     outline: none !important;
     box-shadow: 0 0 0 3px rgb(var(--brand-500) / 0.35) !important;
 }
+[x-cloak] {
+    display: none !important;
+}
