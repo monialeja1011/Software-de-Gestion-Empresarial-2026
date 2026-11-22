@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -227,5 +229,44 @@ class UserController extends Controller
         }
 
         return back()->with('success', 'Roles y permisos actualizados.');
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        abort_unless($request->user()->hasRole('superadmin'), 403);
+
+        if ($request->user()->is($user)) {
+            return back()->withErrors([
+                'user' => 'No puedes eliminar tu propia cuenta desde esta pantalla.',
+            ]);
+        }
+
+        if ($user->hasRole('superadmin') && User::role('superadmin')->count() <= 1) {
+            return back()->withErrors([
+                'user' => 'No puedes eliminar al único superadministrador.',
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $user) {
+            activity()
+                ->causedBy($request->user())
+                ->withProperties([
+                    'usuario_id' => $user->id,
+                    'nombre' => $user->name,
+                    'correo' => $user->email,
+                    'roles' => $user->getRoleNames()->all(),
+                ])
+                ->log('Cuenta de usuario eliminada');
+
+            $user->tokens()->delete();
+            $user->notifications()->delete();
+            $user->syncRoles([]);
+            $user->syncPermissions([]);
+            $user->delete();
+        });
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'La cuenta fue eliminada correctamente.');
     }
 }

@@ -16,6 +16,69 @@
             </div>
         @endif
 
+        @if (session('success'))
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <section class="overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-lg shadow-pink-100">
+            <div class="border-b border-pink-100 px-5 py-4">
+                <h2 class="font-semibold text-slate-900">Cuentas registradas</h2>
+                <p class="mt-1 text-sm text-slate-600">Consulta usuarios y administra sus accesos.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[720px] text-left text-sm">
+                    <thead class="bg-pink-50 text-slate-700">
+                        <tr>
+                            <th class="px-5 py-3 font-semibold">Usuario</th>
+                            <th class="px-5 py-3 font-semibold">Correo</th>
+                            <th class="px-5 py-3 font-semibold">Roles</th>
+                            <th class="px-5 py-3 text-right font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($users as $user)
+                            <tr class="border-t border-slate-100">
+                                <td class="px-5 py-4 font-medium text-slate-900">{{ $user->name }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $user->email }}</td>
+                                <td class="px-5 py-4">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @forelse ($user->roles as $role)
+                                            <span class="rounded-full bg-pink-50 px-2.5 py-1 text-xs font-medium text-pink-800">
+                                                {{ ucfirst(str_replace('-', ' ', $role->name)) }}
+                                            </span>
+                                        @empty
+                                            <span class="text-slate-400">Sin rol</span>
+                                        @endforelse
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 text-right">
+                                    @if (auth()->user()->hasRole('superadmin') && auth()->id() !== $user->id)
+                                        <form method="POST"
+                                              action="{{ route('users.destroy', $user) }}"
+                                              data-confirm="¿Eliminar la cuenta de {{ $user->name }}? Sus ventas y movimientos se conservarán."
+                                              class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50">
+                                                Eliminar cuenta
+                                            </button>
+                                        </form>
+                                    @elseif (auth()->id() === $user->id)
+                                        <span class="text-xs text-slate-400">Tu cuenta</span>
+                                    @else
+                                        <span class="text-xs text-slate-400">Solo superadmin</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <form method="GET" action="{{ route('users.index') }}"
               class="grid gap-4 rounded-2xl bg-white p-5 shadow-lg shadow-pink-100 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
             <label class="text-sm font-medium text-slate-700">

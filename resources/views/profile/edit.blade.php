@@ -83,16 +83,6 @@
                 </section>
             </div>
 
-            @if ($user->hasRole('superadmin'))
-                <section class="rounded-3xl border border-red-200 bg-red-50/70 p-6 shadow-sm sm:p-8">
-                    <div class="mb-5">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-red-700">Zona restringida</p>
-                        <h2 class="mt-1 text-lg font-semibold text-red-900">Eliminar cuenta</h2>
-                        <p class="mt-1 text-sm text-red-800">Esta acción está disponible únicamente para superadministración.</p>
-                    </div>
-                    @include('profile.partials.delete-user-form')
-                </section>
-            @endif
         </div>
     </main>
 </x-app-layout>

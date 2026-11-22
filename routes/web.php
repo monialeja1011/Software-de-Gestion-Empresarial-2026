@@ -36,8 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('role:superadmin')->name('profile.destroy');
-
+    
     Route::get('products/exportar', [ExcelController::class, 'exportProducts'])
         ->middleware('permission:exportar-productos')
         ->name('products.export');
@@ -253,6 +252,10 @@ Route::patch('users/permissions', [UserController::class, 'updatePermissions'])
 Route::patch('users/{user}', [UserController::class, 'update'])
     ->middleware(['role:superadmin', 'permission:gestionar-roles'])
     ->name('users.update');
+
+Route::delete('users/{user}', [UserController::class, 'destroy'])
+    ->middleware(['auth', 'role:superadmin'])
+    ->name('users.destroy');
 
     Route::get('inventory', [InventoryController::class, 'index'])
         ->middleware('permission:ver-inventario')

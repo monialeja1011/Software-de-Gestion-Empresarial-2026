@@ -4,18 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function promoteToSuperAdmin(User $user): void
-    {
-        Role::findOrCreate('superadmin', 'web');
-        $user->assignRole('superadmin');
-    }
 
     public function test_profile_page_is_displayed(): void
     {
@@ -68,52 +62,15 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
-    {
-        $user = User::factory()->create();
-        $this->promoteToSuperAdmin($user);
-
-        $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
-                'password' => 'password',
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
-    }
-
-    public function test_regular_user_cannot_delete_their_account(): void
+    public function test_profile_does_not_allow_self_deletion(): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->delete('/profile', ['password' => 'password'])
-            ->assertForbidden();
+            ->delete('/profile')
+            ->assertMethodNotAllowed();
 
         $this->assertNotNull($user->fresh());
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account(): void
-    {
-        $user = User::factory()->create();
-        $this->promoteToSuperAdmin($user);
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
-
-        $this->assertNotNull($user->fresh());
-    }
 }
