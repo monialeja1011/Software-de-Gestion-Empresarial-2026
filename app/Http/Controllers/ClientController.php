@@ -4,18 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
-    private function rules(): array
+    private function rules(?Client $client = null): array
     {
         return [
-            'name'    => ['required', 'string', 'max:150'],
-            'email'   => ['nullable', 'email', 'max:255'],
-            'phone'   => ['nullable', 'string', 'max:255'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'active'  => ['nullable', 'boolean'],
+            'name'            => ['required', 'string', 'max:150'],
+            'document_number' => [
+                'required',
+                'string',
+                'regex:/^[0-9]{5,15}$/',
+                Rule::unique('clients', 'document_number')->ignore($client?->id),
+            ],
+            'email'           => ['nullable', 'email', 'max:255'],
+            'phone'           => ['nullable', 'string', 'max:255'],
+            'address'         => ['nullable', 'string', 'max:255'],
+            'active'          => ['nullable', 'boolean'],
         ];
+    }
+
+    private function messages(): array
+    {
+        return [
+            'document_number.regex'  => 'La cédula solo debe tener números (entre 5 y 15 dígitos).',
+            'document_number.unique' => 'Ya existe un cliente registrado con esa cédula.',
+        ];
+    }
+
+    private function attributes(): array
+    {
+        return ['document_number' => 'cédula'];
+    }
+
+    /** Deja solo los dígitos: acepta "1.088.234.567" o "1 088 234 567". */
+    private function normalizeDocument(Request $request): void
+    {
+        if ($request->has('document_number')) {
+            $request->merge([
+                'document_number' => preg_replace('/\D/', '', (string) $request->input('document_number')),
+            ]);
+        }
     }
 
     public function index()
@@ -31,7 +61,9 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate($this->rules());
+        $this->normalizeDocument($request);
+
+        $data = $request->validate($this->rules(), $this->messages(), $this->attributes());
         $data['active'] = $request->boolean('active');
         Client::create($data);
 
@@ -45,7 +77,9 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        $data = $request->validate($this->rules());
+        $this->normalizeDocument($request);
+
+        $data = $request->validate($this->rules($client), $this->messages(), $this->attributes());
         $data['active'] = $request->boolean('active');
         $client->update($data);
 

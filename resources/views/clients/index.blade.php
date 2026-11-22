@@ -18,6 +18,7 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>Cédula</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
                         <th>Estado</th>
@@ -28,6 +29,13 @@
                     @forelse ($clients as $item)
                         <tr>
                             <td class="font-medium text-slate-800">{{ $item->name }}</td>
+                            <td class="tabular-nums text-slate-600">
+                                @if ($item->document_number)
+                                    {{ preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $item->document_number) }}
+                                @else
+                                    <x-ui.badge tone="warning">Pendiente</x-ui.badge>
+                                @endif
+                            </td>
                             <td class="text-slate-600">{{ $item->email ?: '—' }}</td>
                             <td class="text-slate-600">{{ $item->phone ?: '—' }}</td>
                             <td>
@@ -47,7 +55,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-ui.empty :colspan="5">Aún no hay clientes registrados.</x-ui.empty>
+                        <x-ui.empty :colspan="6">Aún no hay clientes registrados.</x-ui.empty>
                     @endforelse
                 </tbody>
             </x-ui.table>

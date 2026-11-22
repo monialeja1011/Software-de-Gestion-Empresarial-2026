@@ -11,6 +11,7 @@ class Client extends Model
     use LogsActivity;
     protected $fillable = [
         'name',
+        'document_number',
         'email',
         'phone',
         'address',
