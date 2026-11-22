@@ -1,151 +1,104 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <h1 class="text-2xl font-bold">
-                    {{ $showTrashed ? 'Papelera de categorías' : 'Categorías' }}
-                </h1>
+    <x-slot name="header">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+                {{ $showTrashed ? 'Papelera de categorías' : 'Categorías' }}
+            </h1>
+            <span class="text-sm text-slate-400">Clasificación de productos</span>
+        </div>
+    </x-slot>
 
-                <div class="flex flex-wrap gap-3">
+    <x-ui.container>
+        @can('buscar-categorias')
+            <x-ui.card>
+                <form method="GET" action="{{ route('categories.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-end">
                     @if ($showTrashed)
-                        <a href="{{ route('categories.index') }}"
-                           class="rounded border px-4 py-2">
-                            Ver categorías activas
-                        </a>
-                    @else
-                        @can('crear-categorias')
-                            <a href="{{ route('categories.create') }}"
-                               class="rounded bg-blue-600 px-4 py-2 text-white">
-                                Nueva categoría
-                            </a>
-                        @endcan
-
-                        @can('restaurar-categorias')
-                            <a href="{{ route('categories.index', ['trashed' => 1]) }}"
-                               class="rounded border px-4 py-2">
-                                Papelera ({{ $trashedCount }})
-                            </a>
-                        @endcan
+                        <input type="hidden" name="trashed" value="1">
                     @endif
-                </div>
-            </div>
 
-            @if ($errors->any())
-                <div class="mb-4 rounded bg-red-100 p-3 text-red-800">
-                    {{ $errors->first() }}
-                </div>
-            @endif
+                    <x-ui.field name="buscar" label="Buscar categoría" type="search" :value="$search" placeholder="Nombre o descripción" class="lg:col-span-6" />
 
-            @can('buscar-categorias')
-    <form method="GET" action="{{ route('categories.index') }}"
-          class="mb-4 flex flex-wrap items-end gap-3 rounded bg-white p-4 shadow">
+                    <x-ui.field as="select" name="estado" label="Estado" class="lg:col-span-3">
+                        <option value="">Todos</option>
+                        <option value="activa" @selected($estado === 'activa')>Activas</option>
+                        <option value="inactiva" @selected($estado === 'inactiva')>Inactivas</option>
+                    </x-ui.field>
 
-        @if ($showTrashed)
-            <input type="hidden" name="trashed" value="1">
-        @endif
+                    <div class="flex items-center gap-3 lg:col-span-3">
+                        <x-ui.button>Filtrar</x-ui.button>
+                        <x-ui.link :href="route('categories.index', $showTrashed ? ['trashed' => 1] : [])">Limpiar</x-ui.link>
+                    </div>
+                </form>
+            </x-ui.card>
+        @endcan
 
-        <div>
-            <label for="buscar" class="mb-1 block text-sm font-medium">
-                Buscar categoría
-            </label>
-            <input
-                id="buscar"
-                name="buscar"
-                type="search"
-                value="{{ $search }}"
-                placeholder="Nombre o descripción"
-                class="rounded border-gray-300"
-            >
-        </div>
+        <x-ui.card flush title="Listado" :subtitle="$categories->total().' '.($categories->total() === 1 ? 'categoría' : 'categorías')">
+            <x-slot name="actions">
+                @if ($showTrashed)
+                    <x-ui.button variant="secondary" :href="route('categories.index')">Ver categorías activas</x-ui.button>
+                @else
+                    @can('restaurar-categorias')
+                        <x-ui.button variant="secondary" :href="route('categories.index', ['trashed' => 1])">Papelera ({{ $trashedCount }})</x-ui.button>
+                    @endcan
+                    @can('crear-categorias')
+                        <x-ui.button :href="route('categories.create')">Nueva categoría</x-ui.button>
+                    @endcan
+                @endif
+            </x-slot>
 
-        <div>
-            <label for="estado" class="mb-1 block text-sm font-medium">
-                Estado
-            </label>
-            <select id="estado" name="estado" class="rounded border-gray-300">
-                <option value="">Todos</option>
-                <option value="activa" @selected($estado === 'activa')>Activas</option>
-                <option value="inactiva" @selected($estado === 'inactiva')>Inactivas</option>
-            </select>
-        </div>
-
-        <button type="submit" class="rounded bg-blue-600 px-4 py-2 text-white">
-            Filtrar
-        </button>
-
-        <a href="{{ route('categories.index', $showTrashed ? ['trashed' => 1] : []) }}"
-           class="rounded border px-4 py-2">
-            Limpiar
-        </a>
-    </form>
-@endcan
-            <div class="overflow-x-auto rounded bg-white shadow">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b text-left">
-                            <th class="p-3">ID</th>
-                            <th class="p-3">Nombre</th>
-                            <th class="p-3">Productos asociados</th>
-                            <th class="p-3">Estado</th>
-                            <th class="p-3">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($categories as $category)
-                            <tr class="border-b">
-                                <td class="p-3">{{ $category->id }}</td>
-                                <td class="p-3">{{ $category->name }}</td>
-                                <td class="p-3">{{ $category->products_count }}</td>
-                                <td class="p-3">
+            <x-ui.table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Productos asociados</th>
+                        <th>Estado</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($categories as $category)
+                        <tr>
+                            <td class="text-slate-400">{{ $category->id }}</td>
+                            <td class="font-medium text-slate-800">{{ $category->name }}</td>
+                            <td class="text-slate-600">{{ $category->products_count }}</td>
+                            <td>
+                                <x-ui.badge :tone="$category->active ? 'success' : 'neutral'">
                                     {{ $category->active ? 'Activa' : 'Inactiva' }}
-                                </td>
-                                <td class="p-3">
+                                </x-ui.badge>
+                            </td>
+                            <td>
+                                <div class="flex items-center justify-end gap-4">
                                     @if ($showTrashed)
-                                        <form action="{{ route('categories.restore', $category->id) }}"
-                                              method="POST">
+                                        <form action="{{ route('categories.restore', $category->id) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="text-green-700 underline">
-                                                Restaurar
-                                            </button>
+                                            <button type="submit" class="text-sm font-medium text-emerald-700 underline-offset-2 hover:underline">Restaurar</button>
                                         </form>
                                     @else
                                         @can('editar-categorias')
-                                            <a href="{{ route('categories.edit', $category) }}"
-                                               class="text-blue-700 underline">
-                                                Editar
-                                            </a>
+                                            <x-ui.link :href="route('categories.edit', $category)">Editar</x-ui.link>
                                         @endcan
-
                                         @can('eliminar-categorias')
-                                            <form action="{{ route('categories.destroy', $category) }}"
-                                                  method="POST"
-                                                  class="inline"
-                                                  data-confirm="¿Enviar esta categoría a la papelera?"">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="ms-3 text-red-700 underline">
-                                                    Eliminar
-                                                </button>
-                                            </form>
+                                            <x-ui.delete-form :action="route('categories.destroy', $category)" confirm="¿Enviar esta categoría a la papelera?" />
                                         @endcan
                                     @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="p-4 text-center text-slate-500">
-                                    {{ $showTrashed ? 'La papelera está vacía.' : 'Aún no hay categorías.' }}
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <x-ui.empty :colspan="5">
+                            {{ $showTrashed ? 'La papelera está vacía.' : 'Aún no hay categorías.' }}
+                        </x-ui.empty>
+                    @endforelse
+                </tbody>
+            </x-ui.table>
 
-            <div class="mt-4">
-                {{ $categories->links() }}
-            </div>
-        </div>
-    </div>
+            @if ($categories->hasPages())
+                <div class="border-t border-pink-100 px-6">
+                    {{ $categories->links() }}
+                </div>
+            @endif
+        </x-ui.card>
+    </x-ui.container>
 </x-app-layout>

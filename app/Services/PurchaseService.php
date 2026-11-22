@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Events\PurchaseReceived;
 use App\Models\PurchaseReceipt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -224,6 +225,8 @@ class PurchaseService
                 'status' => $allReceived ? 'recibida' : 'parcialmente_recibida',
                 'received_at' => $allReceived ? now() : null,
             ]);
+
+            PurchaseReceived::dispatch($lockedPurchase, $allReceived);
         });
     }
 

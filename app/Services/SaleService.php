@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Events\SaleRegistered;
 use App\Models\Sale;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,8 @@ class SaleService
                     "Salida por venta {$sale->invoice_number}"
                 );
             }
+
+            SaleRegistered::dispatch($sale);
 
             return $sale;
         });

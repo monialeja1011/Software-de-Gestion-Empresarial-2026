@@ -67,6 +67,16 @@
                     <div class="flex shrink-0 items-center gap-3">
                         <span class="hidden text-sm text-slate-600 sm:inline">{{ Auth::user()->name }}</span>
 
+                        @php($unreadNotificationCount = Auth::user()->unreadNotifications()->count())
+                        <a href="{{ route('notifications.index') }}" class="relative rounded-lg p-2 text-slate-600 transition hover:bg-pink-100 hover:text-pink-800" aria-label="Notificaciones">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 0 1-6 0v-1m6 0H9" />
+                            </svg>
+                            @if ($unreadNotificationCount > 0)
+                                <span class="absolute -right-1 -top-1 rounded-full bg-pink-700 px-1.5 text-xs font-bold text-white">{{ $unreadNotificationCount }}</span>
+                            @endif
+                        </a>
+
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
                             <button
                                 type="button"

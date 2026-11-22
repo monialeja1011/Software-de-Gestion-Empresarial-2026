@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\CompanySettingController;
@@ -21,6 +22,15 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::patch('notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->name('notifications.read');
+
+    Route::patch('notifications/read-all', [NotificationController::class, 'readAll'])
+        ->name('notifications.read-all');
+
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // Perfil (Breeze)
