@@ -9,20 +9,28 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Services\SaleService;
 use App\Services\InventoryService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class SaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // withTrashed permite que el administrador consulte ventas anuladas.
+        $filters = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+
         $sales = Sale::withTrashed()
             ->with(['client', 'paymentMethod', 'user'])
+            ->when($filters['from'] ?? null, fn ($query, $date) => $query->whereDate('sale_date', '>=', $date))
+            ->when($filters['to'] ?? null, fn ($query, $date) => $query->whereDate('sale_date', '<=', $date))
             ->latest('id')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('sales.index', compact('sales'));
+        return view('sales.index', compact('sales', 'filters'));
     }
 
     public function create()

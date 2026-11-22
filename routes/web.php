@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\AuditController;
@@ -36,6 +37,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('products/exportar', [ExcelController::class, 'exportProducts'])
+        ->middleware('permission:exportar-productos')
+        ->name('products.export');
+
+    Route::get('products/importar', [ExcelController::class, 'importForm'])
+        ->middleware('permission:importar-productos')
+        ->name('products.import');
+
+    Route::get('products/plantilla', [ExcelController::class, 'template'])
+        ->middleware('permission:importar-productos')
+        ->name('products.template');
+
+    Route::post('products/importar', [ExcelController::class, 'import'])
+        ->middleware('permission:importar-productos')
+        ->name('products.import.store');
 
     Route::get('products', [ProductController::class, 'index'])
         ->middleware('permission:ver-productos')
@@ -117,6 +134,10 @@ Route::match(['put', 'patch'], 'clients/{client}', [ClientController::class, 'up
 Route::delete('clients/{client}', [ClientController::class, 'destroy'])
     ->middleware('permission:eliminar-clientes')
     ->name('clients.destroy');
+
+Route::get('sales/exportar', [ExcelController::class, 'exportSales'])
+    ->middleware('permission:exportar-ventas')
+    ->name('sales.export');
 
 Route::get('sales', [SaleController::class, 'index'])
     ->middleware('permission:ver-ventas')

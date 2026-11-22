@@ -49,6 +49,12 @@
                     @can('restaurar-productos')
                         <x-ui.button variant="secondary" :href="route('products.index', ['trashed' => 1])">Papelera ({{ $trashedCount }})</x-ui.button>
                     @endcan
+                    @can('exportar-productos')
+                        <x-ui.button variant="secondary" :href="route('products.export', request()->only('buscar', 'categoria_id', 'estado'))">Exportar Excel</x-ui.button>
+                    @endcan
+                    @can('importar-productos')
+                        <x-ui.button variant="secondary" :href="route('products.import')">Importar Excel</x-ui.button>
+                    @endcan
                     @can('crear-productos')
                         <x-ui.button :href="route('products.create')">Nuevo producto</x-ui.button>
                     @endcan
