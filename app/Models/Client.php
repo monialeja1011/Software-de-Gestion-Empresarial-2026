@@ -33,4 +33,12 @@ class Client extends Model
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
+
+    /** Cédula con puntos de miles (1.088.234.567), o null si aún no se registró. */
+    public function formattedDocument(): ?string
+    {
+        return $this->document_number
+            ? preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $this->document_number)
+            : null;
+    }
 }

@@ -42,6 +42,7 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->hasRole('superadmin'), 403);
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);

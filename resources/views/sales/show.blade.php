@@ -49,6 +49,9 @@
                         <dt class="text-slate-500">Cliente</dt>
                         <dd class="mt-1 font-medium text-slate-900">
                             {{ $sale->client?->name ?? 'Cliente no disponible' }}
+                            @if ($sale->client?->formattedDocument())
+                                <span class="block text-sm font-normal text-slate-500">C.C. {{ $sale->client->formattedDocument() }}</span>
+                            @endif
                         </dd>
                     </div>
 

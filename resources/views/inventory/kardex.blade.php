@@ -7,14 +7,17 @@
     </x-slot>
 
     @php
+        // Opcionales: se activan solo si el controlador los envía.
         $selected = $product ?? ($products->firstWhere('id', (int) request('product_id')));
         $hasAdvanced = isset($concepts);
         $hasTotals = isset($totals) && is_array($totals);
         $fieldClass = 'mt-1 w-full rounded-lg border-pink-100 bg-white text-sm text-slate-700 shadow-sm focus:border-pink-400 focus:ring-pink-200';
     @endphp
 
-    <div class="min-h-screen bg-[#fdf5f9] py-8">
+    <div class="min-h-screen bg-pink-50 py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+
+            {{-- Filtros --}}
             <section class="rounded-2xl border border-pink-100 bg-white p-5">
                 <form method="GET" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-end">
                     <div class="lg:col-span-4">
@@ -51,7 +54,7 @@
 
                     <div class="flex items-center gap-3 lg:col-span-2">
                         <button type="submit"
-                                class="rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
+                                class="rounded-lg bg-gradient-to-br from-pink-700 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
                             Consultar
                         </button>
                         @if (request()->hasAny(['product_id', 'concept', 'from', 'to']))
@@ -61,6 +64,7 @@
                 </form>
             </section>
 
+            {{-- Resumen del producto seleccionado --}}
             @if ($selected)
                 <section class="rounded-2xl border border-pink-100 bg-white">
                     <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
@@ -107,6 +111,7 @@
                 </section>
             @endif
 
+            {{-- Movimientos --}}
             <section class="rounded-2xl border border-pink-100 bg-white">
                 <header class="flex items-center justify-between border-b border-pink-100 px-6 py-4">
                     <h2 class="text-base font-semibold text-slate-900">Movimientos</h2>
@@ -183,6 +188,7 @@
                 @endif
             </section>
 
+            {{-- Ajuste de inventario: un solo formulario en lugar de uno por producto --}}
             @can('ajustar-inventario')
                 <section class="rounded-2xl border border-pink-100 bg-white">
                     <details @if ($errors->any()) open @endif class="group">
@@ -233,7 +239,7 @@
 
                             <div class="md:col-span-2">
                                 <button type="submit"
-                                        class="w-full rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
+                                        class="w-full rounded-lg bg-gradient-to-br from-pink-700 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
                                     Guardar ajuste
                                 </button>
                             </div>
@@ -269,6 +275,7 @@
                     });
                 </script>
             @endcan
+
         </div>
     </div>
 </x-app-layout>

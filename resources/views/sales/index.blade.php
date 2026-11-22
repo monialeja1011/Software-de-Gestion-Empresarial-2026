@@ -12,22 +12,6 @@
                 @endcan
             </div>
 
-            <form method="GET" action="{{ route('sales.index') }}" class="mb-5 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm">
-                <div>
-                    <label for="from" class="block text-sm font-medium text-slate-700">Desde</label>
-                    <input id="from" name="from" type="date" value="{{ $filters['from'] ?? '' }}" class="mt-1 rounded-lg border-pink-200">
-                </div>
-                <div>
-                    <label for="to" class="block text-sm font-medium text-slate-700">Hasta</label>
-                    <input id="to" name="to" type="date" value="{{ $filters['to'] ?? '' }}" class="mt-1 rounded-lg border-pink-200">
-                </div>
-                <button type="submit" class="rounded-lg bg-pink-600 px-4 py-2 font-semibold text-white">Filtrar</button>
-                <a href="{{ route('sales.index') }}" class="rounded-lg border border-pink-200 px-4 py-2 text-slate-700">Limpiar</a>
-                @can('exportar-ventas')
-                    <a href="{{ route('sales.export', request()->only('from', 'to')) }}" class="rounded-lg bg-pink-600 px-4 py-2 font-semibold text-white">Exportar Excel</a>
-                @endcan
-            </form>
-
             <div class="overflow-x-auto rounded bg-white shadow">
                 <table class="w-full">
                     <thead>
@@ -56,7 +40,12 @@
                                     {{ $sale->invoice_number ?? 'Venta #'.$sale->id }}
                                 </td>
                                 <td class="p-3">{{ $sale->sale_date->format('d/m/Y') }}</td>
-                                <td class="p-3">{{ $sale->client?->name ?? 'Cliente no disponible' }}</td>
+                                <td class="p-3">
+                                    {{ $sale->client?->name ?? 'Cliente no disponible' }}
+                                    @if ($sale->client?->formattedDocument())
+                                        <span class="block text-xs text-slate-500">C.C. {{ $sale->client->formattedDocument() }}</span>
+                                    @endif
+                                </td>
                                 <td class="p-3">{{ $sale->user?->name ?? 'No registrado' }}</td>
                                 <td class="p-3">{{ $sale->paymentMethod?->name ?? '—' }}</td>
                                 <td class="p-3 text-right">

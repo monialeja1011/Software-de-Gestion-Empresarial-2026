@@ -9,39 +9,53 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Services\SaleService;
 use App\Services\InventoryService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class SaleController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $filters = $request->validate([
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
-
+        // withTrashed permite que el administrador consulte ventas anuladas.
         $sales = Sale::withTrashed()
             ->with(['client', 'paymentMethod', 'user'])
-            ->when($filters['from'] ?? null, fn ($query, $date) => $query->whereDate('sale_date', '>=', $date))
-            ->when($filters['to'] ?? null, fn ($query, $date) => $query->whereDate('sale_date', '<=', $date))
             ->latest('id')
-            ->paginate(15)
-            ->withQueryString();
+            ->paginate(15);
 
-        return view('sales.index', compact('sales', 'filters'));
+        return view('sales.index', compact('sales'));
     }
 
     public function create()
     {
         return view('sales.create', [
-            'clients' => Client::where('active', true)->orderBy('name')->get(),
             'methods' => PaymentMethod::where('active', true)->orderBy('name')->get(),
             'products' => Product::where('active', true)
                 ->where('stock', '>', 0)
                 ->orderBy('name')
                 ->get(['id', 'name', 'price', 'stock', 'iva_percentage']),
+        ]);
+    }
+
+    /**
+     * Consulta rápida para la pantalla de venta: dice si una cédula ya está
+     * registrada y devuelve solo el nombre (no expone otros datos del cliente).
+     */
+    public function lookupClient(Request $request)
+    {
+        $document = preg_replace('/\D/', '', (string) $request->query('document'));
+
+        if (! preg_match('/^[0-9]{5,15}$/', $document)) {
+            return response()->json(['valid' => false]);
+        }
+
+        $client = Client::where('document_number', $document)->first();
+
+        return response()->json([
+            'valid' => true,
+            'found' => $client !== null,
+            'active' => $client?->active,
+            'name' => $client?->name,
         ]);
     }
 

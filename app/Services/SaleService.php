@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Client;
 use App\Models\Product;
-use App\Events\SaleRegistered;
 use App\Models\Sale;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +82,7 @@ class SaleService
 
             $sale = Sale::create([
                 'invoice_number' => null,
-                'client_id' => $data['client_id'],
+                'client_id' => $data['client_id'] ?? $this->resolveClient($data)->id,
                 'user_id' => $userId,
                 'payment_method_id' => $data['payment_method_id'],
                 'sale_date' => $data['sale_date'],
@@ -127,9 +127,25 @@ class SaleService
                 );
             }
 
-            SaleRegistered::dispatch($sale);
-
             return $sale;
         });
+    }
+
+    /**
+     * Cliente de la venta cuando llega la cédula: si ya existe se usa tal cual
+     * (el nombre guardado no se modifica) y si no, se crea con esta misma
+     * transacción, así no queda un cliente suelto si la venta falla.
+     */
+    private function resolveClient(array $data): Client
+    {
+        return Client::firstOrCreate(
+            ['document_number' => $data['client_document']],
+            [
+                'name' => trim((string) ($data['client_name'] ?? '')),
+                'phone' => $data['client_phone'] ?? null,
+                'email' => $data['client_email'] ?? null,
+                'active' => true,
+            ]
+        );
     }
 }

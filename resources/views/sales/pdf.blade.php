@@ -107,7 +107,12 @@
         <h2>Datos de la venta</h2>
         <table class="details">
             <tr>
-                <td><strong>Cliente:</strong> {{ $sale->client?->name ?? 'No disponible' }}</td>
+                <td>
+                    <strong>Cliente:</strong> {{ $sale->client?->name ?? 'No disponible' }}
+                    @if ($sale->client?->formattedDocument())
+                        <br><strong>Cédula:</strong> {{ $sale->client->formattedDocument() }}
+                    @endif
+                </td>
                 <td><strong>Fecha:</strong> {{ $sale->sale_date?->format('d/m/Y') ?? '—' }}</td>
             </tr>
             <tr>

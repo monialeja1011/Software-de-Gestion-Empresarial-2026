@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('role:superadmin')->name('profile.destroy');
 
     Route::get('products/exportar', [ExcelController::class, 'exportProducts'])
         ->middleware('permission:exportar-productos')
@@ -138,6 +138,10 @@ Route::delete('clients/{client}', [ClientController::class, 'destroy'])
 Route::get('sales/exportar', [ExcelController::class, 'exportSales'])
     ->middleware('permission:exportar-ventas')
     ->name('sales.export');
+
+Route::get('clients/lookup', [SaleController::class, 'lookupClient'])
+    ->middleware(['permission:crear-ventas', 'throttle:60,1'])
+    ->name('clients.lookup');
 
 Route::get('sales', [SaleController::class, 'index'])
     ->middleware('permission:ver-ventas')

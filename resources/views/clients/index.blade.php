@@ -2,6 +2,7 @@
     <x-slot name="header">
         <div class="flex items-baseline gap-3">
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Clientes</h1>
+            <span class="text-sm text-slate-400">Directorio de clientes</span>
         </div>
     </x-slot>
 
@@ -30,7 +31,7 @@
                             <td class="font-medium text-slate-800">{{ $item->name }}</td>
                             <td class="tabular-nums text-slate-600">
                                 @if ($item->document_number)
-                                    {{ preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $item->document_number) }}
+                                    {{ $item->formattedDocument() }}
                                 @else
                                     <x-ui.badge tone="warning">Pendiente</x-ui.badge>
                                 @endif

@@ -10,8 +10,10 @@
         $fieldClass = 'mt-1 rounded-lg border-pink-100 bg-white text-sm text-slate-700 shadow-sm focus:border-pink-400 focus:ring-pink-200';
     @endphp
 
-    <div class="min-h-screen bg-[#fdf5f9] py-8">
+    <div class="min-h-screen bg-pink-50 py-8">
         <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
+
+            {{-- Formulario --}}
             <form id="adjust-form" method="POST" action="{{ route('inventory.adjust.store', $product) }}"
                   class="rounded-2xl border border-pink-100 bg-white">
                 @csrf
@@ -53,7 +55,7 @@
 
                 <div class="flex items-center gap-5 border-t border-pink-100 px-6 py-4">
                     <button type="submit"
-                            class="rounded-lg bg-gradient-to-br from-pink-700 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
+                            class="rounded-lg bg-gradient-to-br from-pink-700 to-pink-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-pink-800 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:ring-offset-2">
                         Registrar ajuste
                     </button>
                     <a href="{{ route('inventory.index', ['product_id' => $product->id]) }}"
@@ -63,6 +65,7 @@
                 </div>
             </form>
 
+            {{-- Últimos movimientos --}}
             <section class="rounded-2xl border border-pink-100 bg-white">
                 <header class="border-b border-pink-100 px-6 py-4">
                     <h2 class="text-base font-semibold text-slate-900">Últimos movimientos</h2>
@@ -92,6 +95,7 @@
                     @endforelse
                 </ul>
             </section>
+
         </div>
     </div>
 
@@ -112,7 +116,7 @@
                     message.textContent = '';
                 } else if (diff === 0) {
                     message.className = 'mt-2 text-sm text-slate-500';
-                    message.textContent = 'Sin diferencia: no se registrará ningún movimiento.';
+                    message.textContent = 'Sin diferencia: la cantidad contada debe ser distinta al stock del sistema.';
                 } else if (diff > 0) {
                     message.className = 'mt-2 text-sm font-medium text-emerald-700';
                     message.textContent = `Se registrará una entrada de ${diff} ${plural(diff)}.`;
