@@ -1,13 +1,22 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="max-w-lg mx-auto px-4">
-            <h1 class="text-2xl font-bold mb-6">Nuevo Producto</h1>
-            <form action="{{ route('products.store') }}" method="POST">
-                @csrf 
-                @include('products._form')
-                <button class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
-                <a href="{{ route('products.index') }}" class="ms-3 text-gray-600">Cancelar</a>
-            </form>
+    <x-slot name="header">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Nuevo producto</h1>
+            <span class="text-sm text-slate-400">Productos</span>
         </div>
-    </div>
+    </x-slot>
+
+    <x-ui.container width="max-w-3xl">
+        <form action="{{ route('products.store') }}" method="POST">
+            @csrf
+            <x-ui.card title="Datos del producto">
+                @include('products._form')
+
+                <x-slot name="footer">
+                    <x-ui.button>Guardar</x-ui.button>
+                    <x-ui.link :href="route('products.index')">Cancelar</x-ui.link>
+                </x-slot>
+            </x-ui.card>
+        </form>
+    </x-ui.container>
 </x-app-layout>

@@ -1,44 +1,57 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="max-w-3xl mx-auto px-4">
-            <h1 class="text-2xl font-bold mb-6">Medios de pago</h1>
-
-            <form action="{{ route('payment-methods.store') }}" method="POST" class="flex gap-2 mb-6">
-                @csrf
-                <input type="text" name="name" placeholder="Nuevo medio de pago (ej: Efectivo)" class="flex-1 border rounded p-2" required>
-                <button class="bg-blue-600 text-white px-4 py-2 rounded">Agregar</button>
-            </form>
-
-            <table class="w-full bg-white shadow rounded">
-                <thead>
-                    <tr class="border-b"><th class="p-3 text-left">Nombre</th><th class="p-3 text-left">Activo</th><th class="p-3 text-left">Acciones</th></tr>
-                </thead>
-                <tbody>
-                    @forelse ($methods as $m)
-                        <tr class="border-b">
-                            <td class="p-3" colspan="2">
-                                <form action="{{ route('payment-methods.update', $m) }}" method="POST" class="flex items-center gap-3">
-                                    @csrf @method('PATCH')
-                                    <input type="text" name="name" value="{{ $m->name }}" class="border rounded p-1 flex-1" required>
-                                    <label class="flex items-center gap-1">
-                                        <input type="hidden" name="active" value="0">
-                                        <input type="checkbox" name="active" value="1" @checked($m->active)> Activo
-                                    </label>
-                                    <button class="text-blue-600">Guardar</button>
-                                </form>
-                            </td>
-                            <td class="p-3">
-                                <form action="{{ route('payment-methods.destroy', $m) }}" method="POST" data-confirm="¿Eliminar este medio de pago?"">
-                                    @csrf @method('DELETE')
-                                    <button class="text-red-600">Eliminar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="3" class="p-3 text-gray-500">Aún no hay medios de pago.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <x-slot name="header">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Medios de pago</h1>
+            <span class="text-sm text-slate-400">Formas de pago aceptadas en ventas y compras</span>
         </div>
-    </div>
+    </x-slot>
+
+    @php
+        $control = 'block w-full rounded-lg border-pink-100 bg-white text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:border-pink-400 focus:ring-pink-200';
+    @endphp
+
+    <x-ui.container width="max-w-3xl">
+        @can('crear-metodos-pago')
+            <x-ui.card title="Agregar medio de pago">
+                <form action="{{ route('payment-methods.store') }}" method="POST" class="flex flex-wrap items-start gap-3">
+                    @csrf
+                    <div class="min-w-[14rem] flex-1">
+                        <label for="new-method" class="sr-only">Nombre del medio de pago</label>
+                        <input id="new-method" type="text" name="name" value="{{ old('name') }}" placeholder="Nuevo medio de pago (ej.: Efectivo)" class="{{ $control }}" required>
+                        @error('name')
+                            <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <x-ui.button>Agregar</x-ui.button>
+                </form>
+            </x-ui.card>
+        @endcan
+
+        <x-ui.card flush title="Medios registrados" :subtitle="$methods->count().' '.($methods->count() === 1 ? 'medio' : 'medios')">
+            <ul>
+                @forelse ($methods as $m)
+                    <li class="flex flex-wrap items-center gap-3 border-t border-pink-50 px-6 py-4 first:border-t-0">
+                        @can('editar-metodos-pago')
+                            <form action="{{ route('payment-methods.update', $m) }}" method="POST" class="flex min-w-[16rem] flex-1 flex-wrap items-center gap-3">
+                                @csrf
+                                @method('PATCH')
+                                <input type="text" name="name" value="{{ $m->name }}" aria-label="Nombre del medio de pago" class="{{ $control }} min-w-[10rem] flex-1" required>
+                                <x-ui.checkbox name="active" label="Activo" :checked="$m->active" />
+                                <x-ui.button variant="secondary">Guardar</x-ui.button>
+                            </form>
+                        @else
+                            <span class="flex-1 font-medium text-slate-800">{{ $m->name }}</span>
+                            <x-ui.badge :tone="$m->active ? 'success' : 'neutral'">{{ $m->active ? 'Activo' : 'Inactivo' }}</x-ui.badge>
+                        @endcan
+
+                        @can('eliminar-metodos-pago')
+                            <x-ui.delete-form :action="route('payment-methods.destroy', $m)" confirm="¿Eliminar este medio de pago?" />
+                        @endcan
+                    </li>
+                @empty
+                    <li class="px-6 py-12 text-center text-sm text-slate-500">Aún no hay medios de pago.</li>
+                @endforelse
+            </ul>
+        </x-ui.card>
+    </x-ui.container>
 </x-app-layout>

@@ -1,189 +1,121 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <h1 class="text-2xl font-bold">
-                    {{ $showTrashed ? 'Papelera de productos' : 'Productos' }}
-                </h1>
+    <x-slot name="header">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">
+                {{ $showTrashed ? 'Papelera de productos' : 'Productos' }}
+            </h1>
+            <span class="text-sm text-slate-400">Catálogo e inventario</span>
+        </div>
+    </x-slot>
 
-                <div class="flex flex-wrap gap-3">
-                    @if ($showTrashed)
-                        <a href="{{ route('products.index') }}"
-                           class="rounded border px-4 py-2">
-                            Ver productos activos
-                        </a>
-                    @else
-                        @can('crear-productos')
-                            <a href="{{ route('products.create') }}"
-                               class="rounded bg-blue-600 px-4 py-2 text-white">
-                                Nuevo producto
-                            </a>
-                        @endcan
-
-                        @can('restaurar-productos')
-                            <a href="{{ route('products.index', ['trashed' => 1]) }}"
-                               class="rounded border px-4 py-2">
-                                Papelera ({{ $trashedCount }})
-                            </a>
-                        @endcan
-                    @endif
-                </div>
-            </div>
-
-            @if ($errors->any())
-                <div class="mb-4 rounded bg-red-100 p-3 text-red-800">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            @can('buscar-productos')
-                <form method="GET" action="{{ route('products.index') }}"
-                      class="mb-4 flex flex-wrap items-end gap-3 rounded bg-white p-4 shadow">
-
+    <x-ui.container>
+        @can('buscar-productos')
+            <x-ui.card>
+                <form method="GET" action="{{ route('products.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-end">
                     @if ($showTrashed)
                         <input type="hidden" name="trashed" value="1">
                     @endif
 
-                    <div>
-                        <label for="buscar" class="mb-1 block text-sm font-medium">
-                            Buscar producto
-                        </label>
-                        <input
-                            id="buscar"
-                            name="buscar"
-                            type="search"
-                            value="{{ $search }}"
-                            placeholder="Nombre, descripción o categoría"
-                            class="w-full rounded border-gray-300"
-                        >
-                    </div>
+                    <x-ui.field name="buscar" label="Buscar producto" type="search" :value="$search" placeholder="Nombre, descripción o categoría" class="lg:col-span-5" />
 
-                    <div>
-                        <label for="categoria_id" class="mb-1 block text-sm font-medium">
-                            Categoría
-                        </label>
-                        <select id="categoria_id" name="categoria_id"
-                                class="rounded border-gray-300">
-                            <option value="">Todas</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}"
-                                    @selected((string) $categoryId === (string) $category->id)>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="estado" class="mb-1 block text-sm font-medium">
-                            Estado
-                        </label>
-                        <select id="estado" name="estado" class="rounded border-gray-300">
-                            <option value="">Todos</option>
-                            <option value="activo" @selected($estado === 'activo')>
-                                Activos
+                    <x-ui.field as="select" name="categoria_id" label="Categoría" class="lg:col-span-3">
+                        <option value="">Todas</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected((string) $categoryId === (string) $category->id)>
+                                {{ $category->name }}
                             </option>
-                            <option value="inactivo" @selected($estado === 'inactivo')>
-                                Inactivos
-                            </option>
-                        </select>
+                        @endforeach
+                    </x-ui.field>
+
+                    <x-ui.field as="select" name="estado" label="Estado" class="lg:col-span-2">
+                        <option value="">Todos</option>
+                        <option value="activo" @selected($estado === 'activo')>Activos</option>
+                        <option value="inactivo" @selected($estado === 'inactivo')>Inactivos</option>
+                    </x-ui.field>
+
+                    <div class="flex items-center gap-3 lg:col-span-2">
+                        <x-ui.button>Filtrar</x-ui.button>
+                        <x-ui.link :href="route('products.index', $showTrashed ? ['trashed' => 1] : [])">Limpiar</x-ui.link>
                     </div>
-
-                    <button type="submit"
-                            class="rounded bg-blue-600 px-4 py-2 text-white">
-                        Filtrar
-                    </button>
-
-                    <a href="{{ route('products.index', $showTrashed ? ['trashed' => 1] : []) }}"
-                       class="rounded border px-4 py-2">
-                        Limpiar
-                    </a>
                 </form>
-            @endcan
+            </x-ui.card>
+        @endcan
 
-            <div class="overflow-x-auto rounded bg-white shadow">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b text-left">
-                            <th class="p-3">Nombre</th>
-                            <th class="p-3">Categoría</th>
-                            <th class="p-3 text-right">Precio</th>
-                            <th class="p-3 text-right">Stock</th>
-                            <th class="p-3">Estado</th>
-                            <th class="p-3">Acciones</th>
-                        </tr>
-                    </thead>
+        <x-ui.card flush title="Listado" :subtitle="$products->total().' '.($products->total() === 1 ? 'producto' : 'productos')">
+            <x-slot name="actions">
+                @if ($showTrashed)
+                    <x-ui.button variant="secondary" :href="route('products.index')">Ver productos activos</x-ui.button>
+                @else
+                    @can('restaurar-productos')
+                        <x-ui.button variant="secondary" :href="route('products.index', ['trashed' => 1])">Papelera ({{ $trashedCount }})</x-ui.button>
+                    @endcan
+                    @can('crear-productos')
+                        <x-ui.button :href="route('products.create')">Nuevo producto</x-ui.button>
+                    @endcan
+                @endif
+            </x-slot>
 
-                    <tbody>
-                        @forelse ($products as $product)
-                            <tr class="border-b">
-                                <td class="p-3">{{ $product->name }}</td>
-                                <td class="p-3">
-                                    {{ $product->category?->name ?? 'Sin categoría' }}
-                                </td>
-                                <td class="p-3 text-right">
-                                    ${{ number_format($product->price, 0, ',', '.') }}
-                                </td>
-                                <td class="p-3 text-right">{{ $product->stock }}</td>
-                                <td class="p-3">
+            <x-ui.table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th class="text-right">Precio</th>
+                        <th class="text-right">Stock</th>
+                        <th>Estado</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($products as $product)
+                        <tr>
+                            <td class="font-medium text-slate-800">{{ $product->name }}</td>
+                            <td class="text-slate-600">{{ $product->category?->name ?? 'Sin categoría' }}</td>
+                            <td class="text-right tabular-nums text-slate-700">${{ number_format($product->price, 0, ',', '.') }}</td>
+                            <td class="text-right tabular-nums {{ $product->stock <= 5 ? 'font-semibold text-rose-700' : 'text-slate-700' }}">
+                                {{ $product->stock }}
+                            </td>
+                            <td>
+                                <x-ui.badge :tone="$product->active ? 'success' : 'neutral'">
                                     {{ $product->active ? 'Activo' : 'Inactivo' }}
-                                </td>
-
-                                <td class="p-3">
+                                </x-ui.badge>
+                            </td>
+                            <td>
+                                <div class="flex items-center justify-end gap-4">
                                     @if ($showTrashed)
-                                        <form action="{{ route('products.restore', $product->id) }}"
-                                              method="POST">
+                                        <form action="{{ route('products.restore', $product->id) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
-
-                                            <button type="submit"
-                                                    class="text-green-700 underline">
-                                                Restaurar
-                                            </button>
+                                            <button type="submit" class="text-sm font-medium text-emerald-700 underline-offset-2 hover:underline">Restaurar</button>
                                         </form>
                                     @else
                                         @can('editar-productos')
-                                            <a href="{{ route('products.edit', $product) }}"
-                                               class="text-blue-700 underline">
-                                                Editar
-                                            </a>
+                                            <x-ui.link :href="route('products.edit', $product)">Editar</x-ui.link>
                                         @endcan
-
                                         @can('eliminar-productos')
-                                            <form action="{{ route('products.destroy', $product) }}"
-                                                  method="POST"
-                                                  class="inline"
-                                                  data-confirm="¿Enviar este producto a la papelera?"">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit"
-                                                        class="ms-3 text-red-700 underline">
-                                                    Eliminar
-                                                </button>
-                                            </form>
+                                            <x-ui.delete-form :action="route('products.destroy', $product)" confirm="¿Enviar este producto a la papelera?" />
                                         @endcan
                                     @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="p-4 text-center text-slate-500">
-                                    @if ($showTrashed)
-                                        La papelera está vacía o no hay resultados para esos filtros.
-                                    @else
-                                        No hay productos o no se encontraron resultados.
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <x-ui.empty :colspan="6">
+                            @if ($showTrashed)
+                                La papelera está vacía o no hay resultados para esos filtros.
+                            @else
+                                No hay productos o no se encontraron resultados.
+                            @endif
+                        </x-ui.empty>
+                    @endforelse
+                </tbody>
+            </x-ui.table>
 
-            <div class="mt-4">
-                {{ $products->links() }}
-            </div>
-        </div>
-    </div>
+            @if ($products->hasPages())
+                <div class="border-t border-pink-100 px-6">
+                    {{ $products->links() }}
+                </div>
+            @endif
+        </x-ui.card>
+    </x-ui.container>
 </x-app-layout>

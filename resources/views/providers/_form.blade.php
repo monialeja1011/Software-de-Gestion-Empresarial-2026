@@ -1,21 +1,7 @@
-<label class="block mb-3">
-    Nombre:
-    <input type="text" name="name" value="{{ old('name', $provider->name ?? '') }}" class="w-full border rounded p-2" required>
-</label>
-<label class="block mb-3">
-    Email:
-    <input type="email" name="email" value="{{ old('email', $provider->email ?? '') }}" class="w-full border rounded p-2">
-</label>
-<label class="block mb-3">
-    Teléfono:
-    <input type="text" name="phone" value="{{ old('phone', $provider->phone ?? '') }}" class="w-full border rounded p-2">
-</label>
-<label class="block mb-3">
-    Dirección:
-    <input type="text" name="address" value="{{ old('address', $provider->address ?? '') }}" class="w-full border rounded p-2">
-</label>
-<label class="flex items-center gap-2 mb-4">
-    <input type="hidden" name="active" value="0">
-    <input type="checkbox" name="active" value="1" @checked(old('active', $provider->active ?? true))>
-    Activo
-</label>
+<div class="grid gap-4 sm:grid-cols-2">
+    <x-ui.field name="name" label="Nombre" :value="$provider->name ?? ''" :required="true" class="sm:col-span-2" />
+    <x-ui.field name="email" label="Correo electrónico" type="email" :value="$provider->email ?? ''" />
+    <x-ui.field name="phone" label="Teléfono" type="tel" :value="$provider->phone ?? ''" />
+    <x-ui.field name="address" label="Dirección" :value="$provider->address ?? ''" class="sm:col-span-2" />
+    <x-ui.checkbox name="active" label="Proveedor activo" :checked="old('active', $provider->active ?? true)" class="sm:col-span-2" />
+</div>

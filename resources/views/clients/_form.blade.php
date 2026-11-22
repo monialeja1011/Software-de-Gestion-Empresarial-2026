@@ -5,4 +5,3 @@
     <x-ui.field name="address" label="Dirección" :value="$client->address ?? ''" class="sm:col-span-2" />
     <x-ui.checkbox name="active" label="Cliente activo" :checked="old('active', $client->active ?? true)" class="sm:col-span-2" />
 </div>
-

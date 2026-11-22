@@ -1,41 +1,62 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold">Proveedores</h1>
-                <a href="{{ route('providers.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">Nuevo proveedor</a>
-            </div>
-            <table class="w-full bg-white shadow rounded">
+    <x-slot name="header">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-900">Proveedores</h1>
+            <span class="text-sm text-slate-400">Directorio de proveedores</span>
+        </div>
+    </x-slot>
+
+    <x-ui.container>
+        <x-ui.card flush title="Listado" :subtitle="$providers->total().' '.($providers->total() === 1 ? 'proveedor' : 'proveedores')">
+            <x-slot name="actions">
+                @can('crear-proveedores')
+                    <x-ui.button :href="route('providers.create')">Nuevo proveedor</x-ui.button>
+                @endcan
+            </x-slot>
+
+            <x-ui.table>
                 <thead>
-                    <tr class="border-b">
-                        <th class="p-3 text-left">Nombre</th>
-                        <th class="p-3 text-left">Email</th>
-                        <th class="p-3 text-left">Teléfono</th>
-                        <th class="p-3 text-left">Estado</th>
-                        <th class="p-3 text-left">Acciones</th>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th class="text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($providers as $item)
-                        <tr class="border-b">
-                            <td class="p-3">{{ $item->name }}</td>
-                            <td class="p-3">{{ $item->email }}</td>
-                            <td class="p-3">{{ $item->phone }}</td>
-                            <td class="p-3">{{ $item->active ? 'Activo' : 'Inactivo' }}</td>
-                            <td class="p-3">
-                                <a href="{{ route('providers.edit', $item) }}" class="text-blue-600">Editar</a>
-                                <form action="{{ route('providers.destroy', $item) }}" method="POST" class="inline" data-confirm="¿Eliminar este proveedor?"">
-                                    @csrf @method('DELETE')
-                                    <button class="text-red-600 ms-3">Eliminar</button>
-                                </form>
+                        <tr>
+                            <td class="font-medium text-slate-800">{{ $item->name }}</td>
+                            <td class="text-slate-600">{{ $item->email ?: '—' }}</td>
+                            <td class="text-slate-600">{{ $item->phone ?: '—' }}</td>
+                            <td>
+                                <x-ui.badge :tone="$item->active ? 'success' : 'neutral'">
+                                    {{ $item->active ? 'Activo' : 'Inactivo' }}
+                                </x-ui.badge>
+                            </td>
+                            <td>
+                                <div class="flex items-center justify-end gap-4">
+                                    @can('editar-proveedores')
+                                        <x-ui.link :href="route('providers.edit', $item)">Editar</x-ui.link>
+                                    @endcan
+                                    @can('eliminar-proveedores')
+                                        <x-ui.delete-form :action="route('providers.destroy', $item)" confirm="¿Eliminar este proveedor?" />
+                                    @endcan
+                                </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3 text-gray-500">Aún no hay registros.</td></tr>
+                        <x-ui.empty :colspan="5">Aún no hay proveedores registrados.</x-ui.empty>
                     @endforelse
                 </tbody>
-            </table>
-            <div class="mt-4">{{ $providers->links() }}</div>
-        </div>
-    </div>
+            </x-ui.table>
+
+            @if ($providers->hasPages())
+                <div class="border-t border-pink-100 px-6">
+                    {{ $providers->links() }}
+                </div>
+            @endif
+        </x-ui.card>
+    </x-ui.container>
 </x-app-layout>
