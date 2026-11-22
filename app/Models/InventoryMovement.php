@@ -37,6 +37,20 @@ class InventoryMovement extends Model
 
     public function reference(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo()->constrain([
+            Sale::class => fn ($query) => $query->withTrashed(),
+        ]);
+    }
+
+    public function conceptLabel(): string
+    {
+        return match ($this->concept) {
+            'saldo_inicial' => 'Saldo inicial',
+            'venta' => 'Venta',
+            'anulacion_venta' => 'Anulación de venta',
+            'recepcion_compra' => 'Recepción de compra',
+            'ajuste_manual' => 'Ajuste manual',
+            default => ucfirst(str_replace('_', ' ', (string) $this->concept)),
+        };
     }
 }

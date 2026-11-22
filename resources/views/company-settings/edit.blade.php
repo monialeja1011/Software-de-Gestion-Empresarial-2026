@@ -2,7 +2,6 @@
     <x-slot name="header">
         <div class="flex items-baseline gap-3">
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Identidad corporativa</h1>
-            <span class="text-sm text-slate-400">Datos y marca de tu empresa</span>
         </div>
     </x-slot>
 

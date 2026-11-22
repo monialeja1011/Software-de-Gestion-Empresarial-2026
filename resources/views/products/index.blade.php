@@ -4,7 +4,6 @@
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">
                 {{ $showTrashed ? 'Papelera de productos' : 'Productos' }}
             </h1>
-            <span class="text-sm text-slate-400">Catálogo e inventario</span>
         </div>
     </x-slot>
 

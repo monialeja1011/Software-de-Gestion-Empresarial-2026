@@ -39,6 +39,48 @@
     @endphp
 
     <x-ui.container>
+        <form method="GET" action="{{ route('audit.index') }}" class="mb-5 grid gap-4 rounded-2xl border border-pink-100 bg-white p-5 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+            <div>
+                <label for="module" class="block text-sm font-medium text-slate-600">Módulo</label>
+                <select id="module" name="module" class="mt-1 w-full rounded-lg border-pink-100 bg-white text-sm">
+                    <option value="">Todos</option>
+                    @foreach ($modules as $module)
+                        <option value="{{ $module }}" @selected(($filters['module'] ?? '') === $module)>{{ $module === 'default' ? 'General' : ucfirst($module) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="event" class="block text-sm font-medium text-slate-600">Evento</label>
+                <select id="event" name="event" class="mt-1 w-full rounded-lg border-pink-100 bg-white text-sm">
+                    <option value="">Todos</option>
+                    @foreach ($events as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['event'] ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="user" class="block text-sm font-medium text-slate-600">Usuario</label>
+                <select id="user" name="user" class="mt-1 w-full rounded-lg border-pink-100 bg-white text-sm">
+                    <option value="">Todos</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}" @selected((string) ($filters['user'] ?? '') === (string) $user->id)>{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="from" class="block text-sm font-medium text-slate-600">Desde</label>
+                <input id="from" type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="mt-1 w-full rounded-lg border-pink-100 text-sm">
+            </div>
+            <div>
+                <label for="to" class="block text-sm font-medium text-slate-600">Hasta</label>
+                <input id="to" type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="mt-1 w-full rounded-lg border-pink-100 text-sm">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="rounded-lg bg-pink-600 px-4 py-2 text-sm font-semibold text-white">Filtrar</button>
+                <a href="{{ route('audit.index') }}" class="rounded-lg border border-pink-200 px-4 py-2 text-sm text-slate-700">Limpiar</a>
+            </div>
+        </form>
+
         <x-ui.card flush title="Eventos registrados" :subtitle="$activities->total().' '.($activities->total() === 1 ? 'evento' : 'eventos')">
             <x-ui.table>
                 <thead>

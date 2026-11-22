@@ -2,7 +2,6 @@
     <x-slot name="header">
         <div class="flex items-baseline gap-3">
             <h1 class="text-xl font-semibold tracking-tight text-slate-900">Clientes</h1>
-            <span class="text-sm text-slate-400">Directorio de clientes</span>
         </div>
     </x-slot>
 

@@ -258,6 +258,11 @@ Route::patch('users/{user}', [UserController::class, 'update'])
         ->middleware('permission:ajustar-inventario')
         ->name('inventory.adjust');
 
+    Route::get('inventory/{product}/pdf', [InventoryController::class, 'pdf'])
+        ->withTrashed()
+        ->middleware('permission:ver-inventario')
+        ->name('inventory.pdf');
+
     Route::get('inventory/{product}/adjust', [InventoryController::class, 'editAdjustment'])
         ->middleware('permission:ajustar-inventario')
         ->name('inventory.adjust.form');
