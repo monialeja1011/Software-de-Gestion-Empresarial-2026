@@ -33,12 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // Perfil (Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Productos: cada acción requiere su permiso
     Route::get('products', [ProductController::class, 'index'])
         ->middleware('permission:ver-productos')
         ->name('products.index');
@@ -67,7 +65,6 @@ Route::middleware(['auth'])->group(function () {
     ->middleware('permission:restaurar-productos')
     ->name('products.restore');
 
-    // Categorías: cada acción requiere su permiso
     Route::get('categories', [CategoryController::class, 'index'])
         ->middleware('permission:ver-categorias')
         ->name('categories.index');
@@ -97,7 +94,6 @@ Route::middleware(['auth'])->group(function () {
     ->name('categories.restore');
     
     
-    // Clientes: cada acción requiere su propio permiso
 Route::get('clients', [ClientController::class, 'index'])
     ->middleware('permission:ver-clientes')
     ->name('clients.index');
@@ -122,7 +118,6 @@ Route::delete('clients/{client}', [ClientController::class, 'destroy'])
     ->middleware('permission:eliminar-clientes')
     ->name('clients.destroy');
 
-// Ventas: consultar, crear y eliminar requieren permisos distintos
 Route::get('sales', [SaleController::class, 'index'])
     ->middleware('permission:ver-ventas')
     ->name('sales.index');
@@ -150,7 +145,6 @@ Route::delete('sales/{sale}', [SaleController::class, 'destroy'])
     ->middleware('permission:eliminar-ventas')
     ->name('sales.destroy');
 
-    // Compras: cada operación requiere su permiso
 Route::get('purchases', [PurchaseController::class, 'index'])
     ->middleware('permission:ver-compras')
     ->name('purchases.index');
@@ -179,7 +173,6 @@ Route::patch('purchases/{purchase}/receive', [PurchaseController::class, 'receiv
     ->middleware('permission:recibir-compras')
     ->name('purchases.receive');
 
-// Proveedores: cada acción requiere su permiso
 Route::get('providers', [ProviderController::class, 'index'])
     ->middleware('permission:ver-proveedores')
     ->name('providers.index');
@@ -204,7 +197,6 @@ Route::delete('providers/{provider}', [ProviderController::class, 'destroy'])
     ->middleware('permission:eliminar-proveedores')
     ->name('providers.destroy');
 
-    // Métodos de pago
 Route::get('payment-methods', [PaymentMethodController::class, 'index'])
     ->middleware('permission:ver-metodos-pago')
     ->name('payment-methods.index');
@@ -237,7 +229,6 @@ Route::patch('users/{user}', [UserController::class, 'update'])
     ->middleware(['role:superadmin', 'permission:gestionar-roles'])
     ->name('users.update');
 
-    // Kardex y auditoría
     Route::get('inventory', [InventoryController::class, 'index'])
         ->middleware('permission:ver-inventario')
         ->name('inventory.index');
@@ -266,7 +257,6 @@ Route::patch('users/{user}', [UserController::class, 'update'])
         ->middleware('permission:ver-auditoria')
         ->name('audit.index');
 
-    // Superadmin y administrador
     Route::middleware('role:superadmin|admin')->group(function () {
     });
 });
