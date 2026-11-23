@@ -22,8 +22,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
     public function __construct(
         private int $userId,
         private InventoryService $inventory
-    ) {
-    }
+    ) {}
 
     public function collection(Collection $rows): void
     {

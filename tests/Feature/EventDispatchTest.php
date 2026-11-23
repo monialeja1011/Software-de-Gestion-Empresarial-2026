@@ -13,7 +13,7 @@ class EventDispatchTest extends TestCase
     {
         Event::fake();
 
-        SaleRegistered::dispatch(new Sale());
+        SaleRegistered::dispatch(new Sale);
 
         Event::assertDispatched(SaleRegistered::class);
     }

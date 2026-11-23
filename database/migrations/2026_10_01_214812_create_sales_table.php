@@ -9,17 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::create('sales', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('client_id')->constrained()->onDelete('cascade');
-        $table->date('sale_date');
-        $table->decimal('total', 12, 2)->default(0);
-        $table->boolean('active')->default(true);
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('sales', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->date('sale_date');
+            $table->decimal('total', 12, 2)->default(0);
+            $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+    }
+
     /**
      * Reverse the migrations.
      */

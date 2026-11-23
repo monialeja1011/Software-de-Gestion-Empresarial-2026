@@ -11,6 +11,7 @@ class PaymentMethodController extends Controller
     public function index()
     {
         $methods = PaymentMethod::orderBy('name')->get();
+
         return view('payment_methods.index', compact('methods'));
     }
 

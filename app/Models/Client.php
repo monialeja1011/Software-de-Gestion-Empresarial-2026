@@ -2,20 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Client extends Model
 {
+    use HasFactory;
     use LogsActivity;
+
     protected $fillable = [
         'name',
         'document_number',
         'email',
         'phone',
         'address',
-        'active'
+        'active',
     ];
 
     protected $casts = ['active' => 'boolean'];

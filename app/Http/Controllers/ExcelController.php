@@ -35,7 +35,7 @@ class ExcelController extends Controller
 
     public function template()
     {
-        return Excel::download(new ProductsTemplateExport(), 'plantilla_productos.xlsx');
+        return Excel::download(new ProductsTemplateExport, 'plantilla_productos.xlsx');
     }
 
     public function import(Request $request, InventoryService $inventory): RedirectResponse

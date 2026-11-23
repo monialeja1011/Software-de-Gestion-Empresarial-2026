@@ -1,0 +1,55 @@
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: log
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: bcmath, gd, intl, mbstring, pdo_sqlite, zip
+          coverage: none
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Preparar entorno
+        run: cp .env.example .env
+
+      - name: Instalar dependencias PHP
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Instalar dependencias JavaScript
+        run: npm ci
+
+      - name: Compilar recursos
+        run: npm run build
+
+      - name: Ejecutar pruebas
+        run: php artisan test
+
+      - name: Revisar formato
+        run: vendor/bin/pint --test

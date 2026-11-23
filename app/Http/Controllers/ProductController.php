@@ -12,68 +12,68 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-   public function index(Request $request)
-{
-    $filters = $request->validate([
-        'buscar' => ['nullable', 'string', 'max:100'],
-        'categoria_id' => ['nullable', 'integer', 'exists:categories,id'],
-        'estado' => ['nullable', 'in:activo,inactivo'],
-        'trashed' => ['nullable', 'boolean'],
-    ]);
+    public function index(Request $request)
+    {
+        $filters = $request->validate([
+            'buscar' => ['nullable', 'string', 'max:100'],
+            'categoria_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'estado' => ['nullable', 'in:activo,inactivo'],
+            'trashed' => ['nullable', 'boolean'],
+        ]);
 
-    $showTrashed = $request->boolean('trashed');
-    $search = trim($filters['buscar'] ?? '');
-    $categoryId = $filters['categoria_id'] ?? '';
-    $estado = $filters['estado'] ?? '';
+        $showTrashed = $request->boolean('trashed');
+        $search = trim($filters['buscar'] ?? '');
+        $categoryId = $filters['categoria_id'] ?? '';
+        $estado = $filters['estado'] ?? '';
 
-    if ($showTrashed) {
-        abort_unless($request->user()->can('restaurar-productos'), 403);
+        if ($showTrashed) {
+            abort_unless($request->user()->can('restaurar-productos'), 403);
+        }
+
+        if ($search !== '' || $categoryId !== '' || $estado !== '') {
+            abort_unless($request->user()->can('buscar-productos'), 403);
+        }
+
+        $query = Product::with('category');
+
+        if ($showTrashed) {
+            $query->onlyTrashed();
+        }
+
+        if ($search !== '') {
+            $query->where(function ($products) use ($search) {
+                $products->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($categories) use ($search) {
+                        $categories->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($categoryId !== '') {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($estado === 'activo') {
+            $query->where('active', true);
+        } elseif ($estado === 'inactivo') {
+            $query->where('active', false);
+        }
+
+        $products = $query->orderBy('name')->paginate(15)->withQueryString();
+        $trashedCount = Product::onlyTrashed()->count();
+        $categories = Category::orderBy('name')->get();
+
+        return view('products.index', compact(
+            'products',
+            'showTrashed',
+            'trashedCount',
+            'search',
+            'categoryId',
+            'estado',
+            'categories'
+        ));
     }
-
-    if ($search !== '' || $categoryId !== '' || $estado !== '') {
-        abort_unless($request->user()->can('buscar-productos'), 403);
-    }
-
-    $query = Product::with('category');
-
-    if ($showTrashed) {
-        $query->onlyTrashed();
-    }
-
-    if ($search !== '') {
-        $query->where(function ($products) use ($search) {
-            $products->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhereHas('category', function ($categories) use ($search) {
-                    $categories->where('name', 'like', "%{$search}%");
-                });
-        });
-    }
-
-    if ($categoryId !== '') {
-        $query->where('category_id', $categoryId);
-    }
-
-    if ($estado === 'activo') {
-        $query->where('active', true);
-    } elseif ($estado === 'inactivo') {
-        $query->where('active', false);
-    }
-
-    $products = $query->orderBy('name')->paginate(15)->withQueryString();
-    $trashedCount = Product::onlyTrashed()->count();
-    $categories = Category::orderBy('name')->get();
-
-    return view('products.index', compact(
-        'products',
-        'showTrashed',
-        'trashedCount',
-        'search',
-        'categoryId',
-        'estado',
-        'categories'
-    ));
-}
 
     public function create()
     {

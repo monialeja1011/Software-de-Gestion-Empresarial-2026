@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Events\PurchaseReceived;
 use App\Models\Product;
 use App\Models\Purchase;
-use App\Events\PurchaseReceived;
 use App\Models\PurchaseReceipt;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -13,8 +14,7 @@ class PurchaseService
 {
     public function __construct(
         private InventoryService $inventoryService
-    ) {
-    }
+    ) {}
 
     /**
      * Crea una orden con sus detalles. La orden por sí sola no mueve el stock.
@@ -31,7 +31,7 @@ class PurchaseService
                 'expected_delivery_date' => $data['expected_delivery_date'] ?? null,
                 'payment_term_days' => $termDays,
                 'due_date' => $termDays > 0
-                    ? \Illuminate\Support\Carbon::parse($data['purchase_date'])
+                    ? Carbon::parse($data['purchase_date'])
                         ->addDays($termDays)
                         ->toDateString()
                     : $data['purchase_date'],
@@ -135,8 +135,7 @@ class PurchaseService
 
                 if ($quantity > $remaining) {
                     throw ValidationException::withMessages([
-                        "items.{$detail->id}.quantity" =>
-                            "La cantidad recibida supera lo pendiente para "
+                        "items.{$detail->id}.quantity" => 'La cantidad recibida supera lo pendiente para '
                             ."{$detail->product?->name}. Pendiente: {$remaining}.",
                     ]);
                 }

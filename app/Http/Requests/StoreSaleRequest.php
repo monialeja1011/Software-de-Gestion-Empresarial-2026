@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 class StoreSaleRequest extends FormRequest
 {
     private ?Client $documentClient = null;
+
     private bool $documentClientLoaded = false;
 
     public function authorize(): bool

@@ -1,152 +1,108 @@
-# Sistema de Gestión Empresarial (SGE)
+# MOAL — Sistema de Gestión Empresarial
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Laravel%20Sail-2496ED?logo=docker&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
 
-Aplicación web académica para administrar operaciones de una empresa desde una sola plataforma. El sistema reúne catálogo, clientes, proveedores, compras, ventas, métodos de pago y usuarios. Está desarrollado con Laravel y utiliza una base de datos relacional.
-
----
+ERP académico desarrollado para MOAL en el proyecto de Software de Gestión Empresarial de COTECNOVA. Centraliza la gestión de productos, inventario, compras, ventas, clientes, proveedores, usuarios y operaciones de la empresa.
 
 ## Tabla de contenido
 
-- [Sistema de Gestión Empresarial (SGE)](#sistema-de-gestión-empresarial-sge)
+- [MOAL — Sistema de Gestión Empresarial](#moal--sistema-de-gestión-empresarial)
   - [Tabla de contenido](#tabla-de-contenido)
-  - [Objetivo del sistema](#objetivo-del-sistema)
-  - [Funcionalidades implementadas](#funcionalidades-implementadas)
-  - [Reglas de operación](#reglas-de-operación)
-    - [Ventas](#ventas)
-    - [Compras](#compras)
-    - [Catálogo y relaciones](#catálogo-y-relaciones)
-  - [Roles y acceso](#roles-y-acceso)
+  - [¿Qué es y para qué sirve?](#qué-es-y-para-qué-sirve)
+  - [Funcionalidades](#funcionalidades)
   - [Tecnologías](#tecnologías)
   - [Requisitos previos](#requisitos-previos)
   - [Instalación paso a paso](#instalación-paso-a-paso)
     - [1. Clonar el repositorio](#1-clonar-el-repositorio)
-    - [2. Instalar dependencias de PHP](#2-instalar-dependencias-de-php)
-    - [3. Configurar el entorno](#3-configurar-el-entorno)
+    - [2. Crear el entorno e instalar dependencias](#2-crear-el-entorno-e-instalar-dependencias)
+    - [3. Configurar la conexión local](#3-configurar-la-conexión-local)
     - [4. Iniciar los contenedores](#4-iniciar-los-contenedores)
-    - [5. Crear la clave, las tablas y los datos de demostración](#5-crear-la-clave-las-tablas-y-los-datos-de-demostración)
+    - [5. Preparar Laravel y la base de datos](#5-preparar-laravel-y-la-base-de-datos)
     - [6. Instalar y compilar el frontend](#6-instalar-y-compilar-el-frontend)
     - [7. Abrir la aplicación](#7-abrir-la-aplicación)
-  - [Usuarios de demostración](#usuarios-de-demostración)
-  - [Uso diario y comandos](#uso-diario-y-comandos)
+  - [Usuarios de prueba](#usuarios-de-prueba)
+  - [Uso diario](#uso-diario)
+  - [Comandos útiles](#comandos-útiles)
+  - [Correo y notificaciones](#correo-y-notificaciones)
+  - [API REST y Postman](#api-rest-y-postman)
+  - [Importación y exportación](#importación-y-exportación)
   - [Estructura del proyecto](#estructura-del-proyecto)
-  - [Arquitectura y modelo de datos](#arquitectura-y-modelo-de-datos)
-  - [Pruebas](#pruebas)
-  - [Alcance actual y mejoras propuestas](#alcance-actual-y-mejoras-propuestas)
+  - [Conceptos clave de la arquitectura](#conceptos-clave-de-la-arquitectura)
+  - [Pruebas automatizadas](#pruebas-automatizadas)
+  - [Producción](#producción)
   - [Solución de problemas](#solución-de-problemas)
 
-## Objetivo del sistema
+## ¿Qué es y para qué sirve?
 
-El SGE busca centralizar información de inventario y operaciones comerciales. Una venta consulta productos y existencias, registra sus detalles y descuenta las unidades vendidas. Una compra registra los productos adquiridos y aumenta las existencias. El dashboard presenta un resumen operativo para facilitar la consulta diaria.
+Un ERP integra procesos de una empresa en un solo sistema. En este proyecto, las compras recibidas aumentan el inventario, las ventas descuentan existencias y los movimientos quedan registrados en el Kardex.
 
 ```mermaid
 flowchart LR
-    A[Proveedores] --> B[Compras]
-    B -->|Registra compra y suma unidades| C[(Productos e inventario)]
-    C -->|Consulta existencias| D[Ventas]
-    D -->|Registra detalle y resta unidades| C
-    D -->|Anulación| E[Devuelve unidades al inventario]
-    B --> F[Dashboard]
-    D --> F
-    C --> F
+    A[Proveedores] --> B[Órdenes de compra]
+    B --> C[Recepción de mercancía]
+    C -->|Aumenta existencias| D[(Inventario y Kardex)]
+    D -->|Consulta existencias| E[Ventas]
+    E -->|Descuenta existencias| D
+    E -->|Anulación autorizada| D
+    D --> F[Dashboard y reportes]
+    E --> F
+    B --> F
 ```
 
-## Funcionalidades implementadas
+## Funcionalidades
 
-| Módulo | Funcionalidad disponible | Implementación |
-|---|---|---|
-| Acceso | Inicio de sesión, cierre de sesión y administración del perfil | Laravel Breeze |
-| Dashboard | Ventas y compras del mes, clientes y productos activos, alertas de stock bajo y últimas ventas | `DashboardController` |
-| Productos | Consulta paginada, creación, edición, activación/desactivación y eliminación con validación | `ProductController` |
-| Categorías | Consulta, creación, edición, activación/desactivación y eliminación si no tiene productos | `CategoryController` |
-| Clientes | Administración de registros de clientes | `ClientController` |
-| Proveedores | Administración de registros de proveedores; no permite eliminar los que tienen compras asociadas | `ProviderController` |
-| Ventas | Registro de ventas con uno o más productos, cálculo de total, control de stock y consulta de detalle | `SaleController` |
-| Anulación de venta | Devuelve al inventario las cantidades registradas en los detalles de la venta | Transacción en `SaleController` |
-| Compras | Registro de compra con proveedor, método de pago, productos, cantidades, costo y total | `PurchaseController` |
-| Anulación de compra | Descuenta del stock las cantidades de la compra si siguen disponibles | Transacción en `PurchaseController` |
-| Métodos de pago | Consulta y mantenimiento de los medios de pago | `PaymentMethodController` |
-| Usuarios | Consulta de usuarios y asignación de rol `admin` o `vendedor` | `UserController` |
-
-El dashboard identifica como stock bajo los productos activos con cinco unidades o menos. Sus cifras se calculan a partir de los registros de la base de datos.
-
-## Reglas de operación
-
-### Ventas
-
-- Se debe seleccionar un cliente, un método de pago, una fecha y al menos un producto.
-- La cantidad debe ser un entero positivo y el producto no puede repetirse en varias líneas de la misma venta.
-- Antes de registrar la operación, el sistema verifica que el stock alcance para cubrir la cantidad solicitada.
-- La venta, sus detalles y el descuento de inventario se ejecutan dentro de una transacción. Si falla una validación, no se confirma la operación parcialmente.
-- El producto se bloquea durante la validación de existencias para reducir conflictos si hay operaciones simultáneas.
-- Al anular una venta, las cantidades de sus detalles se devuelven al inventario y la venta queda marcada como inactiva.
-
-### Compras
-
-- Se debe seleccionar un proveedor, un método de pago, una fecha y al menos un producto.
-- La cantidad debe ser positiva, el costo unitario no puede ser negativo y un mismo producto no se repite en varias líneas.
-- Al guardar una compra, el stock aumenta inmediatamente por las cantidades registradas.
-- La anulación descuenta esas unidades únicamente cuando el inventario todavía tiene suficiente stock; de lo contrario, la operación se rechaza.
-
-> **Nota.**
-> En esta versión, la compra se registra como una operación que aumenta el inventario al guardarse. El flujo de órdenes de compra con recepción posterior, parcial o separada todavía no está implementado en este código.
-
-### Catálogo y relaciones
-
-- Los productos requieren una categoría existente y un precio no negativo.
-- No se permite eliminar un producto con ventas o compras relacionadas; se puede desactivar desde su formulario.
-- No se permite eliminar una categoría que tenga productos asociados ni un proveedor con compras registradas.
-- Clientes, proveedores, categorías y productos incluyen un campo de estado activo para controlar su disponibilidad en los formularios.
-
-## Roles y acceso
-
-El campo `users.role` contiene el rol de cada usuario. El middleware propio `role` protege grupos de rutas en el servidor:
-
-| Área | Administrador | Vendedor |
-|---|:---:|:---:|
-| Dashboard y perfil | Sí | Sí |
-| Consulta de productos | Sí | Sí |
-| Clientes | Sí | Sí |
-| Ventas | Sí | Sí |
-| Categorías | Sí | No |
-| Creación y edición de productos | Sí | No |
-| Proveedores y compras | Sí | No |
-| Métodos de pago | Sí | No |
-| Administración de usuarios y roles | Sí | No |
-| Anulación de ventas | Sí | No |
-
-La tabla resume los grupos definidos en `routes/web.php`. El middleware compara el valor de `users.role` con los roles permitidos y devuelve HTTP 403 si no hay autorización. Esta versión no usa una matriz de permisos por acción ni permite asignar excepciones individuales.
+| Módulo | Funcionalidad |
+|---|---|
+| Productos y categorías | Administración del catálogo, estados activo e inactivo, búsqueda y papelera |
+| Clientes y proveedores | Administración de contactos comerciales |
+| Ventas | Registro de ventas con productos, cantidades, método de pago e impuestos |
+| Anulación de ventas | Devolución de existencias y conservación del registro histórico |
+| Compras | Órdenes de compra y recepción de mercancía para actualizar inventario |
+| Kardex | Consulta de entradas, salidas, saldos y ajustes con motivo |
+| PDF | Descarga de documentos de ventas, compras y movimientos de inventario |
+| Dashboard | Indicadores, ventas recientes, productos más vendidos y alertas de stock bajo |
+| Auditoría | Consulta de acciones por módulo, usuario, evento y fecha |
+| Usuarios y roles | Administración de cuentas y permisos según el rol |
+| Identidad corporativa | Configuración del nombre, logo y color de marca de la empresa |
+| Notificaciones | Avisos dentro del sistema y por correo sobre eventos operativos |
+| API REST | Acceso autenticado a productos y ventas mediante tokens |
+| Excel | Importación y exportación de información con permisos |
 
 ## Tecnologías
 
-| Tecnología | Uso |
+| Herramienta | Uso |
 |---|---|
-| Laravel 13 | Rutas, controladores, modelos, validación, autenticación y migraciones |
-| PHP 8.3 o superior | Lenguaje de la aplicación; Sail usa PHP 8.5 en el contenedor configurado |
-| MySQL 8.4 | Base de datos en el entorno Docker Compose incluido |
-| Laravel Sail y Docker Compose | Ejecución local de Laravel y MySQL |
-| Laravel Breeze | Autenticación y perfil de usuario |
-| Blade | Plantillas de la interfaz |
-| Tailwind CSS y Alpine.js | Estilos e interactividad del frontend |
-| Vite y npm | Dependencias y compilación de recursos frontend |
-| PHPUnit | Ejecución de pruebas automatizadas |
+| Laravel 13 | Rutas, controladores, modelos, validaciones y migraciones |
+| PHP 8.5 | Lenguaje del servidor en el contenedor Sail |
+| MySQL 8.4 | Base de datos |
+| Laravel Sail | Entorno de desarrollo con Docker |
+| Laravel Breeze | Autenticación y perfil |
+| Laravel Sanctum | Tokens para la API |
+| Spatie Laravel Permission | Roles y permisos |
+| Spatie Activitylog | Registro de auditoría |
+| Laravel Excel | Importación y exportación de hojas de cálculo |
+| DomPDF | Generación de documentos PDF |
+| Blade, Tailwind CSS y Alpine.js | Interfaz web |
+| Vite y npm | Compilación de recursos frontend |
+| PHPUnit y Pint | Pruebas y formato del código |
+| Mailpit | Recepción local de correos de prueba |
 
 ## Requisitos previos
 
-- Git.
-- Docker Desktop con Docker Compose. En Windows, habilitar WSL 2 y la integración de Ubuntu con Docker Desktop.
-- Composer y PHP 8.3 o superior para la instalación local de dependencias, o Docker para instalar Composer dentro de un contenedor.
-- Node.js y npm, o ejecutar npm por medio de Laravel Sail.
+1. Docker Desktop con Docker Compose.
+2. En Windows, WSL 2 con la integración de Ubuntu habilitada en Docker Desktop.
+3. Git instalado en Ubuntu.
+4. Visual Studio Code con la extensión WSL.
 
-En Windows se recomienda clonar el proyecto dentro del sistema de archivos de Ubuntu, por ejemplo `~/proyecto`, y no dentro de `/mnt/c`, para evitar problemas de rendimiento y permisos con Docker.
+> Se recomienda clonar el repositorio dentro del sistema de archivos de Ubuntu, por ejemplo `~/proyecto/sge`, y evitar `/mnt/c`.
 
 ## Instalación paso a paso
 
-Los siguientes comandos están pensados para Ubuntu/WSL. Sustituye la URL si clonas desde otro remoto.
+Todos los comandos se ejecutan en la terminal de Ubuntu o WSL.
 
 ### 1. Clonar el repositorio
 
@@ -157,35 +113,26 @@ git clone https://github.com/monialeja1011/Software-de-Gestion-Empresarial-2026.
 cd sge
 ```
 
-### 2. Instalar dependencias de PHP
-
-Si tienes Composer instalado:
+### 2. Crear el entorno e instalar dependencias
 
 ```bash
-composer install
-```
+cp .env.example .env
 
-Si no tienes PHP ni Composer en Ubuntu, puedes instalar las dependencias desde un contenedor de Composer:
-
-```bash
 docker run --rm \
   -u "$(id -u):$(id -g)" \
   -v "$(pwd):/var/www/html" \
   -w /var/www/html \
-  composer:2 \
+  laravelsail/php85-composer:latest \
   composer install
 ```
 
-### 3. Configurar el entorno
+El contenedor temporal instala Composer y las extensiones requeridas sin depender del PHP instalado en Ubuntu.
 
-```bash
-cp .env.example .env
-```
+### 3. Configurar la conexión local
 
-Para usar el servicio MySQL definido en `compose.yaml`, configura estas variables en `.env`:
+El archivo `.env.example` está preparado para Sail. Comprueba que las variables locales tengan estos valores:
 
-```dotenv
-APP_NAME="Sistema de Gestión Empresarial"
+```env
 APP_URL=http://localhost
 DB_CONNECTION=mysql
 DB_HOST=mysql
@@ -193,9 +140,13 @@ DB_PORT=3306
 DB_DATABASE=laravel
 DB_USERNAME=sail
 DB_PASSWORD=password
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+QUEUE_CONNECTION=database
 ```
 
-Si el puerto 80 ya está ocupado, agrega `APP_PORT=8080` al `.env`; luego usarás `http://localhost:8080`.
+No compartas ni subas el archivo `.env`.
 
 ### 4. Iniciar los contenedores
 
@@ -204,16 +155,17 @@ Si el puerto 80 ya está ocupado, agrega `APP_PORT=8080` al `.env`; luego usará
 ./vendor/bin/sail ps
 ```
 
-Espera a que MySQL termine de iniciar antes de ejecutar migraciones.
+La primera vez Docker puede tardar varios minutos en preparar los contenedores.
 
-### 5. Crear la clave, las tablas y los datos de demostración
+### 5. Preparar Laravel y la base de datos
 
 ```bash
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan storage:link
 ```
 
-`migrate --seed` crea el esquema y ejecuta `DatabaseSeeder`, que registra los usuarios de demostración, los métodos de pago y algunos registros iniciales para probar los módulos.
+`migrate --seed` crea las tablas y ejecuta los seeders del proyecto. Si ya tienes información en tu base de datos, utiliza `migrate` sin `--seed`.
 
 ### 6. Instalar y compilar el frontend
 
@@ -224,199 +176,183 @@ Espera a que MySQL termine de iniciar antes de ejecutar migraciones.
 
 ### 7. Abrir la aplicación
 
-Visita [http://localhost](http://localhost) o el puerto configurado en `APP_PORT`. Inicia sesión con uno de los [usuarios de demostración](#usuarios-de-demostración).
+Visita <http://localhost>. Mailpit está disponible en <http://localhost:8025>.
 
-## Usuarios de demostración
+## Usuarios de prueba
 
-`DatabaseSeeder` crea estas cuentas con la contraseña inicial `password`:
+Las cuentas iniciales se crean mediante los seeders de `database/seeders`. Consulta `DatabaseSeeder.php` para ver las cuentas y contraseñas configuradas en tu copia del proyecto. Cambia las contraseñas iniciales antes de usar el sistema fuera del entorno local.
 
-| Correo | Rol |
+Los roles del proyecto incluyen:
+
+| Rol | Acceso general |
 |---|---|
-| `admin@sge.test` | `admin` |
-| `vendedor@sge.test` | `vendedor` |
+| `superadmin` | Administración completa, incluidos los usuarios |
+| `admin` | Administración de los módulos permitidos |
+| `vendedor` | Productos, clientes y ventas según sus permisos |
+| `almacenista` | Inventario, proveedores y compras según sus permisos |
 
+Un usuario con más de un rol selecciona el rol activo para cada sesión.
 
-## Uso diario y comandos
+## Uso diario
 
 ```bash
 cd ~/proyecto/sge
-./vendor/bin/sail up -d      # Iniciar el entorno
-./vendor/bin/sail stop       # Detener los contenedores sin borrar datos
-./vendor/bin/sail ps         # Consultar el estado de los servicios
+./vendor/bin/sail up -d
+./vendor/bin/sail ps
 ```
 
-Durante el desarrollo del frontend puedes ejecutar Vite en modo de actualización automática:
+Para detener los contenedores sin borrar los datos:
+
+```bash
+./vendor/bin/sail stop
+```
+
+Durante el desarrollo frontend puedes iniciar Vite:
 
 ```bash
 ./vendor/bin/sail npm run dev
 ```
 
-| Comando | Acción |
-|---|---|
-| `./vendor/bin/sail artisan migrate` | Ejecuta las migraciones pendientes |
-| `./vendor/bin/sail artisan migrate:status` | Consulta el estado de las migraciones |
-| `./vendor/bin/sail artisan db:seed` | Carga los datos iniciales de demostración |
-| `./vendor/bin/sail artisan route:list` | Lista las rutas registradas |
-| `./vendor/bin/sail artisan optimize:clear` | Limpia las cachés de Laravel |
-| `./vendor/bin/sail npm run build` | Compila CSS y JavaScript para uso local |
-| `./vendor/bin/sail test` | Ejecuta las pruebas automatizadas |
-| `./vendor/bin/sail logs -f` | Sigue los registros de los contenedores |
+## Comandos útiles
 
-> **Advertencia.**
-> `migrate:fresh` elimina todas las tablas antes de crearlas de nuevo. Úsalo solo si aceptas borrar la base de datos local.
+| Comando | Función |
+|---|---|
+| `./vendor/bin/sail artisan migrate` | Ejecuta migraciones pendientes |
+| `./vendor/bin/sail artisan migrate:status` | Consulta el estado de las migraciones |
+| `./vendor/bin/sail artisan db:seed` | Ejecuta los seeders |
+| `./vendor/bin/sail artisan route:list` | Lista las rutas |
+| `./vendor/bin/sail artisan optimize:clear` | Limpia las cachés de Laravel |
+| `./vendor/bin/sail artisan permission:cache-reset` | Limpia la caché de permisos |
+| `./vendor/bin/sail artisan queue:work --tries=3` | Procesa trabajos en cola |
+| `./vendor/bin/sail artisan schedule:work` | Ejecuta el planificador durante desarrollo |
+| `./vendor/bin/sail artisan erp:resumen-diario` | Encola el resumen diario |
+| `./vendor/bin/sail artisan kardex:inicializar` | Registra saldos iniciales en el Kardex |
+| `./vendor/bin/sail test` | Ejecuta las pruebas automatizadas |
+| `./vendor/bin/sail pint --test` | Comprueba el formato del código |
+
+## Correo y notificaciones
+
+En el entorno local, los correos se envían a Mailpit y no a destinatarios reales. Abre <http://localhost:8025> para revisarlos.
+
+Las notificaciones en cola requieren un worker activo:
+
+```bash
+./vendor/bin/sail artisan queue:work --tries=3
+```
+
+Para ejecutar el planificador localmente:
+
+```bash
+./vendor/bin/sail artisan schedule:work
+```
+
+## API REST y Postman
+
+La colección de Postman está en `docs/api/SGE.postman_collection.json`.
+
+| Método | Ruta | Función |
+|---|---|---|
+| POST | `/api/v1/login` | Inicia sesión y devuelve un token |
+| POST | `/api/v1/logout` | Revoca el token actual |
+| GET | `/api/v1/me` | Consulta el usuario autenticado |
+| GET | `/api/v1/products` | Lista productos |
+| GET | `/api/v1/products/{product}` | Consulta un producto |
+| POST | `/api/v1/sales` | Registra una venta |
+| GET | `/api/v1/sales/{sale}` | Consulta una venta |
+
+Las rutas protegidas requieren autenticación Bearer:
+
+```http
+Authorization: Bearer TU_TOKEN
+Accept: application/json
+```
+
+Completa las variables de la colección con la URL local y los identificadores existentes en tu base de datos.
+
+## Importación y exportación
+
+Los módulos de importación y exportación están protegidos por permisos. La colección y las rutas del proyecto permiten consultar qué operaciones están disponibles para cada usuario.
 
 ## Estructura del proyecto
 
 ```text
 sge/
 ├── app/
-│   ├── Http/
-│   │   ├── Controllers/       # Controladores por módulo
-│   │   ├── Middleware/        # Middleware de autorización por rol
-│   │   └── Requests/          # Validaciones HTTP
-│   └── Models/                # Modelos Eloquent y relaciones
-├── bootstrap/                 # Inicialización y registro de middleware
-├── config/                    # Configuración de Laravel
+│   ├── Console/Commands/
+│   ├── Events/
+│   ├── Exports/
+│   ├── Http/Controllers/
+│   ├── Http/Requests/
+│   ├── Imports/
+│   ├── Listeners/
+│   ├── Models/
+│   ├── Notifications/
+│   └── Services/
 ├── database/
-│   ├── migrations/            # Esquema relacional
-│   ├── factories/             # Fábricas para datos de prueba
-│   └── seeders/               # Usuarios y datos iniciales
+│   ├── factories/
+│   ├── migrations/
+│   └── seeders/
+├── docs/api/
 ├── resources/
-│   ├── css/                   # Estilos Tailwind
-│   ├── js/                    # JavaScript y Alpine.js
-│   └── views/                 # Vistas Blade por módulo
+│   ├── css/
+│   ├── js/
+│   └── views/
 ├── routes/
-│   ├── auth.php               # Rutas de autenticación
-│   └── web.php                # Rutas web y grupos de rol
-├── tests/                     # Pruebas Feature y Unit
-└── compose.yaml               # Servicios Laravel y MySQL para Sail
+├── tests/
+├── compose.yaml
+└── .github/workflows/
 ```
 
-## Arquitectura y modelo de datos
+## Conceptos clave de la arquitectura
 
-La aplicación sigue la estructura MVC de Laravel. Las rutas de `routes/web.php` dirigen las solicitudes a controladores; los controladores validan datos y usan modelos Eloquent para consultar o actualizar MySQL; las vistas Blade presentan los resultados.
+- **Servicios:** las reglas de negocio de ventas, compras e inventario se organizan en servicios de Laravel.
+- **Transacciones:** las operaciones relacionadas se confirman juntas para evitar guardar ventas, compras o movimientos parcialmente.
+- **Kardex:** cada entrada, salida o ajuste registra producto, concepto, saldo y usuario asociado.
+- **Permisos:** el servidor comprueba roles y permisos para autorizar rutas y acciones.
+- **Auditoría:** los eventos quedan disponibles para su consulta en el módulo de auditoría.
+- **Identidad corporativa:** los datos de la empresa se utilizan en la interfaz y en documentos PDF.
+- **Eliminación de cuentas:** solo el superadmin puede eliminar cuentas ajenas y no puede eliminar su propia cuenta.
 
-```mermaid
-erDiagram
-    USERS {
-        bigint id PK
-        string name
-        string email
-        string role
-    }
-    CATEGORIES {
-        bigint id PK
-        string name
-        boolean active
-    }
-    PRODUCTS {
-        bigint id PK
-        bigint category_id FK
-        string name
-        decimal price
-        int stock
-        boolean active
-    }
-    CLIENTS {
-        bigint id PK
-        string name
-        string email
-    }
-    PROVIDERS {
-        bigint id PK
-        string name
-        string email
-    }
-    PAYMENT_METHODS {
-        bigint id PK
-        string name
-        boolean active
-    }
-    SALES {
-        bigint id PK
-        bigint client_id FK
-        bigint payment_method_id FK
-        date sale_date
-        decimal total
-        boolean active
-    }
-    SALE_DETAILS {
-        bigint id PK
-        bigint sale_id FK
-        bigint product_id FK
-        int quantity
-        decimal price
-        decimal subtotal
-    }
-    PURCHASES {
-        bigint id PK
-        bigint provider_id FK
-        bigint payment_method_id FK
-        date purchase_date
-        decimal total
-        boolean active
-    }
-    PURCHASE_DETAILS {
-        bigint id PK
-        bigint purchase_id FK
-        bigint product_id FK
-        int quantity
-        decimal price
-        decimal subtotal
-    }
-    CATEGORIES ||--o{ PRODUCTS : clasifica
-    CLIENTS ||--o{ SALES : compra
-    PAYMENT_METHODS ||--o{ SALES : paga
-    SALES ||--|{ SALE_DETAILS : contiene
-    PRODUCTS ||--o{ SALE_DETAILS : vendido
-    PROVIDERS ||--o{ PURCHASES : abastece
-    PAYMENT_METHODS ||--o{ PURCHASES : paga
-    PURCHASES ||--|{ PURCHASE_DETAILS : contiene
-    PRODUCTS ||--o{ PURCHASE_DETAILS : comprado
-```
+## Pruebas automatizadas
 
-Los campos y restricciones definitivos se encuentran en `database/migrations`. El diagrama representa las relaciones principales, no todos los campos auxiliares de Laravel.
-
-## Pruebas
-
-Para ejecutar la suite incluida:
+Ejecuta la suite completa:
 
 ```bash
-./vendor/bin/sail test
+./vendor/bin/sail artisan test
 ```
 
-Las pruebas están en `tests/Feature` y `tests/Unit`. El conjunto actual incluye pruebas base de Laravel Breeze; no debe interpretarse como cobertura completa de todos los flujos de inventario, ventas y compras.
+Comprueba el estilo:
 
-## Alcance actual y mejoras propuestas
+```bash
+./vendor/bin/sail pint --test
+```
 
-La versión descrita aquí cuenta con operaciones básicas de catálogo, ventas y compras, además de autorización por los dos roles iniciales. Estas funcionalidades no están implementadas en el código de esta carpeta y, por tanto, requieren desarrollo antes de documentarse como disponibles:
+Aplica el formato:
 
-- Permisos configurables por acción y una matriz CRUD administrable.
-- Roles adicionales, rol activo y permisos individuales por usuario.
-- Órdenes de compra que no alteren inventario hasta registrar una recepción.
-- Recepciones parciales, historial de entregas y validación frente al saldo pendiente.
-- Cálculo y desglose de IVA por producto en ventas y compras.
-- Costo de compra y margen configurables para actualizar automáticamente el precio público.
-- Comprobantes PDF de venta y órdenes de compra.
-- Auditoría de cambios y kardex de movimientos de inventario.
-- Borrado lógico con papelera y restauración.
-- Evidencias académicas y documentación de pruebas por requisito.
+```bash
+./vendor/bin/sail pint
+```
+
+El flujo `.github/workflows/pruebas.yml` automatiza las pruebas y la revisión del formato en GitHub Actions.
+
+## Producción
+
+`.env.production.example` sirve como plantilla para preparar una instalación en un servidor. El proveedor de alojamiento proporciona las credenciales de base de datos y SMTP. Genera la clave de aplicación en el servidor y configura `APP_ENV=production`, `APP_DEBUG=false` y una URL HTTPS.
+
+No publiques `.env`, claves, contraseñas ni tokens en el repositorio.
 
 ## Solución de problemas
 
-| Mensaje o síntoma | Causa probable | Qué revisar |
-|---|---|---|
-| `./vendor/bin/sail: No such file or directory` | No se instalaron las dependencias PHP | Ejecuta `composer install` desde la raíz del proyecto |
-| `Cannot connect to the Docker daemon` | Docker Desktop está cerrado o WSL no está integrado | Inicia Docker Desktop y habilita la integración de Ubuntu |
-| `Bind for 0.0.0.0:80 failed` | El puerto 80 está ocupado | Define `APP_PORT=8080` en `.env` y reinicia Sail |
-| `SQLSTATE[HY000] [2002] Connection refused` | MySQL está iniciando o el host de base de datos no coincide | Espera unos segundos y verifica `DB_HOST=mysql` y `DB_CONNECTION=mysql` |
-| `No application encryption key has been specified` | No se generó `APP_KEY` | Ejecuta `./vendor/bin/sail artisan key:generate` |
-| `Vite manifest not found` | No se compiló el frontend | Ejecuta `./vendor/bin/sail npm install` y `./vendor/bin/sail npm run build` |
-| Respuesta HTTP 403 | El rol del usuario no está autorizado para esa ruta | Comprueba el campo `role` y las restricciones de `routes/web.php` |
-| La aplicación conserva una vista o configuración anterior | Caché local desactualizada | Ejecuta `./vendor/bin/sail artisan optimize:clear` y recarga el navegador |
-
----
+| Problema | Qué revisar |
+|---|---|
+| Sail dice que Docker no está activo | Abre Docker Desktop y habilita la integración de WSL con Ubuntu |
+| No aparece `vendor/bin/sail` | Instala las dependencias PHP desde el paso 2 |
+| Error de conexión a MySQL | Confirma que los contenedores estén activos y que `DB_HOST=mysql` |
+| Falta el manifiesto de Vite | Ejecuta `./vendor/bin/sail npm run build` |
+| No aparecen correos | Revisa `MAIL_HOST=mailpit`, el puerto `1025` y Mailpit en <http://localhost:8025> |
+| Fallan trabajos de cola | Inicia `./vendor/bin/sail artisan queue:work --tries=3` |
+| Permiso denegado en Docker desde WSL | Comprueba la integración de Docker Desktop con tu distribución Ubuntu |
 
 <p align="center">
-  Proyecto académico · <strong>Sistema de Gestión Empresarial</strong>
+  Proyecto académico · Software de Gestión Empresarial · COTECNOVA 2026
 </p>

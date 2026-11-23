@@ -13,5 +13,4 @@ Schedule::command('erp:resumen-diario')
     ->timezone('America/Bogota')
     ->withoutOverlapping();
 
-    
 Schedule::command('activitylog:clean')->monthly();

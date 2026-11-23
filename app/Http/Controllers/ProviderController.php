@@ -10,17 +10,18 @@ class ProviderController extends Controller
     private function rules(): array
     {
         return [
-            'name'    => ['required', 'string', 'max:150'],
-            'email'   => ['nullable', 'email', 'max:255'],
-            'phone'   => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:150'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],
-            'active'  => ['nullable', 'boolean'],
+            'active' => ['nullable', 'boolean'],
         ];
     }
 
     public function index()
     {
         $providers = Provider::orderBy('name')->paginate(15);
+
         return view('providers.index', compact('providers'));
     }
 

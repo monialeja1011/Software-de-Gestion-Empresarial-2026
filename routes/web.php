@@ -1,13 +1,13 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExcelController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\AuditController;
-use App\Http\Controllers\CompanySettingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -16,7 +16,6 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    
+
     Route::get('products/exportar', [ExcelController::class, 'exportProducts'])
         ->middleware('permission:exportar-productos')
         ->name('products.export');
@@ -76,10 +75,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])
         ->middleware('permission:eliminar-productos')
         ->name('products.destroy');
-    
+
     Route::patch('products/{product}/restore', [ProductController::class, 'restore'])
-    ->middleware('permission:restaurar-productos')
-    ->name('products.restore');
+        ->middleware('permission:restaurar-productos')
+        ->name('products.restore');
 
     Route::get('categories', [CategoryController::class, 'index'])
         ->middleware('permission:ver-categorias')
@@ -104,158 +103,157 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('categories/{category}', [CategoryController::class, 'destroy'])
         ->middleware('permission:eliminar-categorias')
         ->name('categories.destroy');
-    
+
     Route::patch('categories/{category}/restore', [CategoryController::class, 'restore'])
-    ->middleware('permission:restaurar-categorias')
-    ->name('categories.restore');
-    
-    
-Route::get('clients', [ClientController::class, 'index'])
-    ->middleware('permission:ver-clientes')
-    ->name('clients.index');
+        ->middleware('permission:restaurar-categorias')
+        ->name('categories.restore');
 
-Route::get('clients/create', [ClientController::class, 'create'])
-    ->middleware('permission:crear-clientes')
-    ->name('clients.create');
+    Route::get('clients', [ClientController::class, 'index'])
+            ->middleware('permission:ver-clientes')
+            ->name('clients.index');
 
-Route::post('clients', [ClientController::class, 'store'])
-    ->middleware('permission:crear-clientes')
-    ->name('clients.store');
+    Route::get('clients/create', [ClientController::class, 'create'])
+        ->middleware('permission:crear-clientes')
+        ->name('clients.create');
 
-Route::get('clients/{client}/edit', [ClientController::class, 'edit'])
-    ->middleware('permission:editar-clientes')
-    ->name('clients.edit');
+    Route::post('clients', [ClientController::class, 'store'])
+        ->middleware('permission:crear-clientes')
+        ->name('clients.store');
 
-Route::match(['put', 'patch'], 'clients/{client}', [ClientController::class, 'update'])
-    ->middleware('permission:editar-clientes')
-    ->name('clients.update');
+    Route::get('clients/{client}/edit', [ClientController::class, 'edit'])
+        ->middleware('permission:editar-clientes')
+        ->name('clients.edit');
 
-Route::delete('clients/{client}', [ClientController::class, 'destroy'])
-    ->middleware('permission:eliminar-clientes')
-    ->name('clients.destroy');
+    Route::match(['put', 'patch'], 'clients/{client}', [ClientController::class, 'update'])
+        ->middleware('permission:editar-clientes')
+        ->name('clients.update');
 
-Route::get('sales/exportar', [ExcelController::class, 'exportSales'])
-    ->middleware('permission:exportar-ventas')
-    ->name('sales.export');
+    Route::delete('clients/{client}', [ClientController::class, 'destroy'])
+        ->middleware('permission:eliminar-clientes')
+        ->name('clients.destroy');
 
-Route::get('clients/lookup', [SaleController::class, 'lookupClient'])
-    ->middleware(['permission:crear-ventas', 'throttle:60,1'])
-    ->name('clients.lookup');
+    Route::get('sales/exportar', [ExcelController::class, 'exportSales'])
+        ->middleware('permission:exportar-ventas')
+        ->name('sales.export');
 
-Route::get('sales', [SaleController::class, 'index'])
-    ->middleware('permission:ver-ventas')
-    ->name('sales.index');
+    Route::get('clients/lookup', [SaleController::class, 'lookupClient'])
+        ->middleware(['permission:crear-ventas', 'throttle:60,1'])
+        ->name('clients.lookup');
 
-Route::get('sales/create', [SaleController::class, 'create'])
-    ->middleware('permission:crear-ventas')
-    ->name('sales.create');
+    Route::get('sales', [SaleController::class, 'index'])
+        ->middleware('permission:ver-ventas')
+        ->name('sales.index');
 
-Route::post('sales', [SaleController::class, 'store'])
-    ->middleware('permission:crear-ventas')
-    ->name('sales.store');
+    Route::get('sales/create', [SaleController::class, 'create'])
+        ->middleware('permission:crear-ventas')
+        ->name('sales.create');
 
-Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])
-    ->withTrashed()
-    ->middleware('permission:ver-ventas')
-    ->name('sales.pdf');
+    Route::post('sales', [SaleController::class, 'store'])
+        ->middleware('permission:crear-ventas')
+        ->name('sales.store');
 
-Route::get('sales/{sale}', [SaleController::class, 'show'])
-    ->withTrashed()
-    ->middleware('permission:ver-ventas')
-    ->name('sales.show');
+    Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])
+        ->withTrashed()
+        ->middleware('permission:ver-ventas')
+        ->name('sales.pdf');
 
-Route::delete('sales/{sale}', [SaleController::class, 'destroy'])
-    ->withTrashed()
-    ->middleware('permission:eliminar-ventas')
-    ->name('sales.destroy');
+    Route::get('sales/{sale}', [SaleController::class, 'show'])
+        ->withTrashed()
+        ->middleware('permission:ver-ventas')
+        ->name('sales.show');
 
-Route::get('purchases', [PurchaseController::class, 'index'])
-    ->middleware('permission:ver-compras')
-    ->name('purchases.index');
+    Route::delete('sales/{sale}', [SaleController::class, 'destroy'])
+        ->withTrashed()
+        ->middleware('permission:eliminar-ventas')
+        ->name('sales.destroy');
 
-Route::get('purchases/create', [PurchaseController::class, 'create'])
-    ->middleware('permission:crear-compras')
-    ->name('purchases.create');
+    Route::get('purchases', [PurchaseController::class, 'index'])
+        ->middleware('permission:ver-compras')
+        ->name('purchases.index');
 
-Route::post('purchases', [PurchaseController::class, 'store'])
-    ->middleware('permission:crear-compras')
-    ->name('purchases.store');
+    Route::get('purchases/create', [PurchaseController::class, 'create'])
+        ->middleware('permission:crear-compras')
+        ->name('purchases.create');
 
-Route::get('purchases/{purchase}/pdf', [PurchaseController::class, 'pdf'])
-    ->middleware('permission:ver-compras')
-    ->name('purchases.pdf');
+    Route::post('purchases', [PurchaseController::class, 'store'])
+        ->middleware('permission:crear-compras')
+        ->name('purchases.store');
 
-Route::get('purchases/{purchase}', [PurchaseController::class, 'show'])
-    ->middleware('permission:ver-compras')
-    ->name('purchases.show');
+    Route::get('purchases/{purchase}/pdf', [PurchaseController::class, 'pdf'])
+        ->middleware('permission:ver-compras')
+        ->name('purchases.pdf');
 
-Route::delete('purchases/{purchase}', [PurchaseController::class, 'destroy'])
-    ->middleware('permission:eliminar-compras')
-    ->name('purchases.destroy');
+    Route::get('purchases/{purchase}', [PurchaseController::class, 'show'])
+        ->middleware('permission:ver-compras')
+        ->name('purchases.show');
 
-Route::patch('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])
-    ->middleware('permission:recibir-compras')
-    ->name('purchases.receive');
+    Route::delete('purchases/{purchase}', [PurchaseController::class, 'destroy'])
+        ->middleware('permission:eliminar-compras')
+        ->name('purchases.destroy');
 
-Route::get('providers', [ProviderController::class, 'index'])
-    ->middleware('permission:ver-proveedores')
-    ->name('providers.index');
+    Route::patch('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])
+        ->middleware('permission:recibir-compras')
+        ->name('purchases.receive');
 
-Route::get('providers/create', [ProviderController::class, 'create'])
-    ->middleware('permission:crear-proveedores')
-    ->name('providers.create');
+    Route::get('providers', [ProviderController::class, 'index'])
+        ->middleware('permission:ver-proveedores')
+        ->name('providers.index');
 
-Route::post('providers', [ProviderController::class, 'store'])
-    ->middleware('permission:crear-proveedores')
-    ->name('providers.store');
+    Route::get('providers/create', [ProviderController::class, 'create'])
+        ->middleware('permission:crear-proveedores')
+        ->name('providers.create');
 
-Route::get('providers/{provider}/edit', [ProviderController::class, 'edit'])
-    ->middleware('permission:editar-proveedores')
-    ->name('providers.edit');
+    Route::post('providers', [ProviderController::class, 'store'])
+        ->middleware('permission:crear-proveedores')
+        ->name('providers.store');
 
-Route::match(['put', 'patch'], 'providers/{provider}', [ProviderController::class, 'update'])
-    ->middleware('permission:editar-proveedores')
-    ->name('providers.update');
+    Route::get('providers/{provider}/edit', [ProviderController::class, 'edit'])
+        ->middleware('permission:editar-proveedores')
+        ->name('providers.edit');
 
-Route::delete('providers/{provider}', [ProviderController::class, 'destroy'])
-    ->middleware('permission:eliminar-proveedores')
-    ->name('providers.destroy');
+    Route::match(['put', 'patch'], 'providers/{provider}', [ProviderController::class, 'update'])
+        ->middleware('permission:editar-proveedores')
+        ->name('providers.update');
 
-Route::get('payment-methods', [PaymentMethodController::class, 'index'])
-    ->middleware('permission:ver-metodos-pago')
-    ->name('payment-methods.index');
+    Route::delete('providers/{provider}', [ProviderController::class, 'destroy'])
+        ->middleware('permission:eliminar-proveedores')
+        ->name('providers.destroy');
 
-Route::post('payment-methods', [PaymentMethodController::class, 'store'])
-    ->middleware('permission:crear-metodos-pago')
-    ->name('payment-methods.store');
+    Route::get('payment-methods', [PaymentMethodController::class, 'index'])
+        ->middleware('permission:ver-metodos-pago')
+        ->name('payment-methods.index');
 
-Route::match(
-    ['put', 'patch'],
-    'payment-methods/{paymentMethod}',
-    [PaymentMethodController::class, 'update']
-)
-    ->middleware('permission:editar-metodos-pago')
-    ->name('payment-methods.update');
+    Route::post('payment-methods', [PaymentMethodController::class, 'store'])
+        ->middleware('permission:crear-metodos-pago')
+        ->name('payment-methods.store');
 
-Route::delete('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])
-    ->middleware('permission:eliminar-metodos-pago')
-    ->name('payment-methods.destroy');
+    Route::match(
+        ['put', 'patch'],
+        'payment-methods/{paymentMethod}',
+        [PaymentMethodController::class, 'update']
+    )
+        ->middleware('permission:editar-metodos-pago')
+        ->name('payment-methods.update');
 
-Route::get('users', [UserController::class, 'index'])
-    ->middleware('permission:gestionar-usuarios')
-    ->name('users.index');
+    Route::delete('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])
+        ->middleware('permission:eliminar-metodos-pago')
+        ->name('payment-methods.destroy');
 
-Route::patch('users/permissions', [UserController::class, 'updatePermissions'])
-    ->middleware(['role:superadmin', 'permission:gestionar-permisos'])
-    ->name('users.permissions.update');
+    Route::get('users', [UserController::class, 'index'])
+        ->middleware('permission:gestionar-usuarios')
+        ->name('users.index');
 
-Route::patch('users/{user}', [UserController::class, 'update'])
-    ->middleware(['role:superadmin', 'permission:gestionar-roles'])
-    ->name('users.update');
+    Route::patch('users/permissions', [UserController::class, 'updatePermissions'])
+        ->middleware(['role:superadmin', 'permission:gestionar-permisos'])
+        ->name('users.permissions.update');
 
-Route::delete('users/{user}', [UserController::class, 'destroy'])
-    ->middleware(['auth', 'role:superadmin'])
-    ->name('users.destroy');
+    Route::patch('users/{user}', [UserController::class, 'update'])
+        ->middleware(['role:superadmin', 'permission:gestionar-roles'])
+        ->name('users.update');
+
+    Route::delete('users/{user}', [UserController::class, 'destroy'])
+        ->middleware(['auth', 'role:superadmin'])
+        ->name('users.destroy');
 
     Route::get('inventory', [InventoryController::class, 'index'])
         ->middleware('permission:ver-inventario')
@@ -290,8 +288,7 @@ Route::delete('users/{user}', [UserController::class, 'destroy'])
         ->middleware('permission:ver-auditoria')
         ->name('audit.index');
 
-    Route::middleware('role:superadmin|admin')->group(function () {
-    });
+    Route::middleware('role:superadmin|admin')->group(function () {});
 });
 
 require __DIR__.'/auth.php';

@@ -11,24 +11,24 @@ class ClientController extends Controller
     private function rules(?Client $client = null): array
     {
         return [
-            'name'            => ['required', 'string', 'max:150'],
+            'name' => ['required', 'string', 'max:150'],
             'document_number' => [
                 'required',
                 'string',
                 'regex:/^[0-9]{5,15}$/',
                 Rule::unique('clients', 'document_number')->ignore($client?->id),
             ],
-            'email'           => ['nullable', 'email', 'max:255'],
-            'phone'           => ['nullable', 'string', 'max:255'],
-            'address'         => ['nullable', 'string', 'max:255'],
-            'active'          => ['nullable', 'boolean'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'active' => ['nullable', 'boolean'],
         ];
     }
 
     private function messages(): array
     {
         return [
-            'document_number.regex'  => 'La cédula solo debe tener números (entre 5 y 15 dígitos).',
+            'document_number.regex' => 'La cédula solo debe tener números (entre 5 y 15 dígitos).',
             'document_number.unique' => 'Ya existe un cliente registrado con esa cédula.',
         ];
     }
@@ -51,6 +51,7 @@ class ClientController extends Controller
     public function index()
     {
         $clients = Client::orderBy('name')->paginate(15);
+
         return view('clients.index', compact('clients'));
     }
 

@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\CompanySetting;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,9 +12,7 @@ class DailySummaryNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public array $summary)
-    {
-    }
+    public function __construct(public array $summary) {}
 
     public function via(object $notifiable): array
     {

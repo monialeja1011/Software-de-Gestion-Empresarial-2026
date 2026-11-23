@@ -7,11 +7,11 @@ use App\Models\Client;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
-use App\Services\SaleService;
 use App\Services\InventoryService;
-use Illuminate\Support\Facades\DB;
+use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -71,7 +71,7 @@ class SaleController extends Controller
             ->with('success', "Venta {$sale->invoice_number} registrada correctamente.");
     }
 
-        public function pdf(Sale $sale)
+    public function pdf(Sale $sale)
     {
         $sale->load(['client', 'paymentMethod', 'user', 'details.product']);
 

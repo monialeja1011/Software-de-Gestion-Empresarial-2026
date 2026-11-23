@@ -11,7 +11,5 @@ class SaleRegistered implements ShouldDispatchAfterCommit
 {
     use Dispatchable, SerializesModels;
 
-    public function __construct(public Sale $sale)
-    {
-    }
+    public function __construct(public Sale $sale) {}
 }

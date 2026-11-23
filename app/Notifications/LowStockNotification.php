@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\CompanySetting;
-
 use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,9 +13,7 @@ class LowStockNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Product $product)
-    {
-    }
+    public function __construct(public Product $product) {}
 
     public function via(object $notifiable): array
     {

@@ -14,6 +14,5 @@ class PurchaseReceived implements ShouldDispatchAfterCommit
     public function __construct(
         public Purchase $purchase,
         public bool $complete
-    ) {
-    }
+    ) {}
 }

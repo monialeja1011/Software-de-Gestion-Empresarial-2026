@@ -9,59 +9,59 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-   public function index(Request $request)
-{
-    $filters = $request->validate([
-        'buscar' => ['nullable', 'string', 'max:100'],
-        'estado' => ['nullable', 'in:activa,inactiva'],
-        'trashed' => ['nullable', 'boolean'],
-    ]);
+    public function index(Request $request)
+    {
+        $filters = $request->validate([
+            'buscar' => ['nullable', 'string', 'max:100'],
+            'estado' => ['nullable', 'in:activa,inactiva'],
+            'trashed' => ['nullable', 'boolean'],
+        ]);
 
-    $showTrashed = $request->boolean('trashed');
-    $search = trim($filters['buscar'] ?? '');
-    $estado = $filters['estado'] ?? '';
+        $showTrashed = $request->boolean('trashed');
+        $search = trim($filters['buscar'] ?? '');
+        $estado = $filters['estado'] ?? '';
 
-    if ($showTrashed) {
-        abort_unless($request->user()->can('restaurar-categorias'), 403);
+        if ($showTrashed) {
+            abort_unless($request->user()->can('restaurar-categorias'), 403);
+        }
+
+        // Buscar o filtrar requiere el permiso buscar-categorias.
+        if ($search !== '' || $estado !== '') {
+            abort_unless($request->user()->can('buscar-categorias'), 403);
+        }
+
+        $query = Category::withCount([
+            'products' => fn ($products) => $products->withTrashed(),
+        ])->orderBy('name');
+
+        if ($showTrashed) {
+            $query->onlyTrashed();
+        }
+
+        if ($search !== '') {
+            $query->where(function ($categories) use ($search) {
+                $categories->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($estado === 'activa') {
+            $query->where('active', true);
+        } elseif ($estado === 'inactiva') {
+            $query->where('active', false);
+        }
+
+        $categories = $query->paginate(15)->withQueryString();
+        $trashedCount = Category::onlyTrashed()->count();
+
+        return view('categories.index', compact(
+            'categories',
+            'showTrashed',
+            'trashedCount',
+            'search',
+            'estado'
+        ));
     }
-
-    // Buscar o filtrar requiere el permiso buscar-categorias.
-    if ($search !== '' || $estado !== '') {
-        abort_unless($request->user()->can('buscar-categorias'), 403);
-    }
-
-    $query = Category::withCount([
-        'products' => fn ($products) => $products->withTrashed(),
-    ])->orderBy('name');
-
-    if ($showTrashed) {
-        $query->onlyTrashed();
-    }
-
-    if ($search !== '') {
-        $query->where(function ($categories) use ($search) {
-            $categories->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
-        });
-    }
-
-    if ($estado === 'activa') {
-        $query->where('active', true);
-    } elseif ($estado === 'inactiva') {
-        $query->where('active', false);
-    }
-
-    $categories = $query->paginate(15)->withQueryString();
-    $trashedCount = Category::onlyTrashed()->count();
-
-    return view('categories.index', compact(
-        'categories',
-        'showTrashed',
-        'trashedCount',
-        'search',
-        'estado'
-    ));
-}
 
     public function create()
     {

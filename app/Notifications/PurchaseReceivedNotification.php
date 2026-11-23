@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\CompanySetting;
-
 use App\Models\Purchase;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
@@ -18,8 +17,7 @@ class PurchaseReceivedNotification extends Notification implements ShouldQueue
     public function __construct(
         public Purchase $purchase,
         public bool $complete
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

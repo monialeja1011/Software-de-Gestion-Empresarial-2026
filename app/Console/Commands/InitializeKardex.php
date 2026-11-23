@@ -25,6 +25,7 @@ class InitializeKardex extends Command
 
                 if ($alreadyHasMovements || (int) $product->stock < 1) {
                     $skipped++;
+
                     continue;
                 }
 
