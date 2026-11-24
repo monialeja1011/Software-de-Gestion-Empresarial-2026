@@ -109,8 +109,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('categories.restore');
 
     Route::get('clients', [ClientController::class, 'index'])
-            ->middleware('permission:ver-clientes')
-            ->name('clients.index');
+        ->middleware('permission:ver-clientes')
+        ->name('clients.index');
 
     Route::get('clients/create', [ClientController::class, 'create'])
         ->middleware('permission:crear-clientes')
